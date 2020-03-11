@@ -186,6 +186,6 @@ class World:
         self.update_plants()
         self.update_fields()
         self.write_plants()
-        if self.global_time < MONTS * 20000:
+        if self.global_time < MONTS * 10000:
             self.canvas.after(80, self.update)
 

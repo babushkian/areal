@@ -6,7 +6,6 @@ from tkinter import *
 from areal import world
 
 
-
 def assign_world_const(modul, parc):
 	for key in parc:
 		gv = parc.get(key)
