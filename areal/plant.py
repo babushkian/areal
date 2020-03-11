@@ -164,3 +164,15 @@ class Seed:
     def __init__(self): # добавлю параметры позже
         self.color = 'hot pink'
         self.age = 0
+
+    def update(self):
+        pass
+
+    def become_plant(self):
+        pass
+
+    def become_soil(self):
+        self.canvas.delete(self.id)
+        Rot(self.field, self.sx, self.sy, self.all_consumed_food)
+        del self.world.plants[self.id]
+        del self.field.plants[self.id]

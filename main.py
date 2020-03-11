@@ -24,7 +24,7 @@ def assign_world_const(modul, parc):
 
 config = configparser.ConfigParser()
 try:
-	conf_file = open('areal.cfg', 'r', encoding ='utf-16')
+	conf_file = open('areal.cfg', 'r', encoding='utf-16')
 except:
 	print('Отсутствует файл конфигурации.')
 	sys.exit(1)
