@@ -156,3 +156,6 @@ class Rot:
         del self.field.rot[self.id]
 
 
+class Rot:
+    def __init__(self): # добавлю параметры позже
+        self.hello = 'Я родился!'
