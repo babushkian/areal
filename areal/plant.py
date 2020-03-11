@@ -7,7 +7,7 @@ class Plant:
     LIFETIME_PRECENT = 5.9 # количество циклов
     SPREAD_TIME_PRECENT = 0.5  # каждые х% года - плодоношение
     EPSILON = 0.3
-    START_CONSUMED = 5
+    START_CONSUMED = 5 # растение создается с некоторым количеством потребленной почвы
     MAX_MASS = 30
     SEED_MASS = 1
 
@@ -18,7 +18,7 @@ class Plant:
     def __init__(self,  field, sx, sy):
         self.world = field.world
         self.field = field
-        self.canvas = field.world.canvas#
+        self.canvas = field.world.canvas
         # координаты экранного пространства,  а не физические
         self.sx = sx
         self.sy = sy
@@ -157,5 +157,10 @@ class Rot:
 
 
 class Seed:
+    # условие проростания семечка. Сколько земли должно быть в клетке
+    GROW_UP_CONDITION = 50
+    # сколько лет семечко может пролежать до всхода и не умереть
+    SEED_LIFE = 4
     def __init__(self): # добавлю параметры позже
-        self.hello = 'Я родился!'
+        self.color = 'hot pink'
+        self.age = 0
