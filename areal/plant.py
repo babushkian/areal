@@ -161,9 +161,20 @@ class Seed:
     GROW_UP_CONDITION = 50
     # сколько лет семечко может пролежать до всхода и не умереть
     SEED_LIFE = 4
-    def __init__(self): # добавлю параметры позже
+    def __init__(self, field, sx, sy): # добавлю параметры позже
+        self.world = field.world
+        self.field = field
+        self.canvas = field.world.canvas
         self.color = 'hot pink'
         self.age = 0
+        self.sx = sx
+        self.sy = sy
+        self.all_food = Plant.SEED_MASS + Plant.START_CONSUMED
+
+        self.id = self.canvas.create_rectangle(self.sx-3, self.sy-3, self.sx+3, self.sy+3, fill=self.color)
+        self.world.seeds[self.id] = self
+        self.field.seeds[self.id] = self
+
 
     def update(self):
         pass
@@ -173,6 +184,6 @@ class Seed:
 
     def become_soil(self):
         self.canvas.delete(self.id)
-        Rot(self.field, self.sx, self.sy, self.all_consumed_food)
+        Rot(self.field, self.sx, self.sy, self.all_food)
         del self.world.plants[self.id]
         del self.field.plants[self.id]
