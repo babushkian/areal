@@ -1,6 +1,5 @@
 ﻿from areal import world as wd
-
-
+from areal import field as fd
 
 class Plant:
     # переменные надо заново вычислять после загрузки из конфига
@@ -162,10 +161,12 @@ class Seed:
     # сколько лет семечко может пролежать до всхода и не умереть
     SEED_LIFE = 4
     def __init__(self, field, sx, sy): # добавлю параметры позже
+        # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
+        # зависела от этого запаса. А сам запас определялся геномом растений
         self.world = field.world
         self.field = field
         self.canvas = field.world.canvas
-        self.color = 'hot pink'
+        self.color = 'gold'
         self.age = 0
         self.sx = sx
         self.sy = sy
@@ -177,13 +178,26 @@ class Seed:
 
 
     def update(self):
-        pass
+        if self.age > self.SEED_LIFE * wd.MONTS:
+            self.become_soil()
+        else:
+            self.age += 1
+            if self.field.soil >= self.GROW_UP_CONDITION:
+                self.grow_up()
 
-    def become_plant(self):
-        pass
+
+    def grow_up(self):
+        if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
+            Plant(self.field, self.sx, self.sy)
+        else:
+            Rot(self.field, self.sx, self.sy)
+        self.destroy_seed()
 
     def become_soil(self):
-        self.canvas.delete(self.id)
         Rot(self.field, self.sx, self.sy, self.all_food)
-        del self.world.plants[self.id]
-        del self.field.plants[self.id]
+        self.destroy_seed()
+
+    def destroy_seed(self):
+        self.canvas.delete(self.id)
+        del self.world.seeds[self.id]
+        del self.field.seeds[self.id]

@@ -67,7 +67,8 @@ class Field:  # клетка поля
     def create_plant(self):
         """
         Вызывается из класса World при размножении расений
-        будет змененна на create seed
+        Служит для инициалищзации пастений  вначале симуляции. В дальнейшем не используется,
+        растения прорастают из семян
         """
         # определяем координаты новорожденного растения
         # физические координаты
@@ -77,8 +78,7 @@ class Field:  # клетка поля
         sx, sy = self.phys_to_screen(x, y)
 
         if len(self.plants) < self.MAX_PLANTS_IN_FIELD:
-            new_plant = pt.Plant(self, sx, sy)
-            self.plants[new_plant.id] = new_plant
+            pt.Plant(self, sx, sy)
         else:
             pt.Rot(self, sx, sy)
 
@@ -89,12 +89,9 @@ class Field:  # клетка поля
         y = self.rd_y + random.randrange(int(self.lu_y - self.rd_y))
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
+        pt.Seed(self, sx, sy)
 
-        if len(self.plants) < self.MAX_PLANTS_IN_FIELD:
-            new_seed = pt.Seed(self, sx, sy)
-            self.seeds[new_seed.id] = new_seed
-        else:
-            pt.Rot(self, sx, sy)
+
 
 
     def info(self):
