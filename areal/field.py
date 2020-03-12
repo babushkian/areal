@@ -7,12 +7,12 @@ from areal import plant as pt
 
 class Field:  # клетка поля
     # максимальное количество растений на клетку, чтобы симуляция не тормозила
-    MAX_PLANTS_IN_FIELD = 10
+    MAX_PLANTS_IN_FIELD = 5
 
     # расстояние от центра клетки до ее границы в физических единицах
     # есть мение, что тут не вполне правильно, надо разобраться
     FIELD_GRAPH_TO_PHYS_PROPORTION =  1
-    INIT_SOIL = 200 # количество почвы на клетке
+    INIT_SOIL = 400 # количество почвы на клетке
     f_file = open('field_info.csv', 'w', encoding='UTF16')
     header = 'global time\tcoordinates\tplants\trot\tbiomass\trot mass\tsoil\ttotal mass\n'
     f_file.write(header)
