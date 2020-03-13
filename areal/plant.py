@@ -1,6 +1,10 @@
 ﻿from areal import world as wd
 from areal import field as fd
 
+class Being:
+    def __init__(self):
+        pass
+
 class Plant:
     # переменные надо заново вычислять после загрузки из конфига
     LIFETIME_PRECENT = 5.9 # количество циклов

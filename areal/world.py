@@ -48,7 +48,7 @@ def init_constants():
 
 
 plants_info = open('plants_info.csv', 'w', encoding='UTF16')
-header = 'year\tglob time\ttotal plants\tfull\tstarving\trot\tbiomass\trot mass\tsoil\ttotal mass\n'
+header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
 plants_info.write(header)
 
 class World:
@@ -161,7 +161,7 @@ class World:
 
 
     def write_plants(self):
-        s = '%d\t%d\t%d\t' % (self.years, self.global_time, len(self.plants))
+        s = f'{self.years}\t{self.global_time}\t{len(self.plants)}\t'
         full = 0
         starving = 0
         biomass = 0
@@ -175,9 +175,12 @@ class World:
         rot_mass = 0
         for r in self.rot:
             rot_mass += self.rot[r].mass
-        s += '%d\t%d\t%d\t' % (full, starving, len(self.rot))
+        seed_mass = 0
+        for seed in self.seeds:
+            seed_mass += self.seeds[seed].all_food
+        s += f'{full}\t{starving}\t{len(self.seeds)}\t{len(self.rot)}\t'
         total_mass = biomass + rot_mass + self.total_soil
-        s +='%8.1f\t%8.0f\t%8.1f\t%8.0f\n' % (biomass, rot_mass, self.total_soil, total_mass)
+        s += f'{seed_mass:8.1f}\t{biomass:8.1f}\t{rot_mass:8.1f}\t{self.total_soil:8.1f}\t{total_mass:8.1f}\n'
         plants_info.write(s.replace('.', ','))
 
 
