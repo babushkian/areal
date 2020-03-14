@@ -1,18 +1,88 @@
 ﻿from areal import world as wd
 from areal import field as fd
 
+
+START_CONSUMED = 5  # растение создается с некоторым количеством потребленной почвы
+MAX_MASS = 30
+SEED_MASS = 1
+
+from .rot import Rot
+
 class Being:
-    def __init__(self):
-        pass
+
+    def __init__(self, field, sx, sy):
+        self.world = field.world
+        self.field = field
+        self.canvas = field.world.canvas
+        # координаты экранного пространства,  а не физические
+        self.sx = sx
+        self.sy = sy
+        self.color = 'lawn green'
+        self.age = 0
+
+        self.all_consumed_food = START_CONSUMED + SEED_MASS  # еда, потребленная за всю жизнь
+
+        self.id = self.canvas.create_rectangle(self.sx - 3, self.sy - 3, self.sx + 3, self.sy + 3, fill=self.color)
+        self.world.plants[self.id] = self
+        self.field.plants[self.id] = self
+
+
+
+
+class Seed:
+    # условие проростания семечка. Сколько земли должно быть в клетке
+    GROW_UP_CONDITION = 50
+    # сколько лет семечко может пролежать до всхода и не умереть
+    SEED_LIFE = 4
+    def __init__(self, field, sx, sy): # добавлю параметры позже
+        # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
+        # зависела от этого запаса. А сам запас определялся геномом растений
+        self.world = field.world
+        self.field = field
+        self.canvas = field.world.canvas
+        self.color = 'gold'
+        self.age = 0
+        self.sx = sx
+        self.sy = sy
+        self.all_food = SEED_MASS + START_CONSUMED
+
+        self.id = self.canvas.create_rectangle(self.sx-3, self.sy-3, self.sx+3, self.sy+3, fill=self.color)
+        self.world.seeds[self.id] = self
+        self.field.seeds[self.id] = self
+
+
+    def update(self):
+        if self.age > self.SEED_LIFE * wd.MONTS:
+            self.become_soil()
+        else:
+            self.age += 1
+            if self.field.soil >= self.GROW_UP_CONDITION:
+                self.grow_up()
+
+
+    def grow_up(self):
+        if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
+            Plant(self.field, self.sx, self.sy)
+        else:
+            Rot(self.field, self.sx, self.sy)
+        self.destroy_seed()
+
+    def become_soil(self):
+        Rot(self.field, self.sx, self.sy, self.all_food)
+        self.destroy_seed()
+
+    def destroy_seed(self):
+        self.canvas.delete(self.id)
+        del self.world.seeds[self.id]
+        del self.field.seeds[self.id]
+
 
 class Plant:
     # переменные надо заново вычислять после загрузки из конфига
     LIFETIME_PRECENT = 5.9 # количество циклов
     SPREAD_TIME_PRECENT = 0.5  # каждые х% года - плодоношение
     EPSILON = 0.3
-    START_CONSUMED = 5 # растение создается с некоторым количеством потребленной почвы
-    MAX_MASS = 30
-    SEED_MASS = 1
+
 
     header = 'time\tID\tpmalnt coords\tage\tmass\ttotal food consumed\tfood to live\t food to grow\t food ability\tget food\tmass delta\tsoil in field\n'
     p_file = open('plant_table.csv', 'w', encoding='UTF16')
@@ -27,9 +97,9 @@ class Plant:
         self.sy = sy
         self.color = 'lawn green'
         self.age = 0
-        self.mass = self.SEED_MASS
+        self.mass = SEED_MASS
 
-        self.all_consumed_food = self.START_CONSUMED + self.SEED_MASS  # еда, потребленная за всю жизнь
+        self.all_consumed_food = START_CONSUMED + SEED_MASS  # еда, потребленная за всю жизнь
 
         self.id = self.canvas.create_rectangle(self.sx-3, self.sy-3, self.sx+3, self.sy+3, fill=self.color)
         self.world.plants[self.id] = self
@@ -49,7 +119,7 @@ class Plant:
 
     def count_needs(self):
         self.res_to_live = self.ALPHA * self.mass  # сколько ресурсов нужно просто на поддержание жизни
-        self.res_to_grow = self.BETA * (self.MAX_MASS - self.mass)
+        self.res_to_grow = self.BETA * (MAX_MASS - self.mass)
         self.res_ability = self.GAMA * (1 + self.EPSILON * self.mass)  # возможность добыть еды за ход
         return self.res_to_live, self.res_to_grow, self.res_ability
 
@@ -69,10 +139,10 @@ class Plant:
         if self.age == self.LIFETIME:
             self.die()
         else:
-            if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.99 * self.MAX_MASS:
+            if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.99 * MAX_MASS:
                 self.world.to_breed.append(self)  # встает в очередь на размножение
-                self.mass -= self.START_CONSUMED + self.SEED_MASS
-                self.all_consumed_food -= self.START_CONSUMED + self.SEED_MASS
+                self.mass -= START_CONSUMED + SEED_MASS
+                self.all_consumed_food -= START_CONSUMED + SEED_MASS
             self.feed()
             self.age += 1
             self.canvas.itemconfigure(self.id, fill=self.color)
@@ -114,94 +184,4 @@ class Plant:
         s += 'mass up = %4.1f\n'% self.delta
         return  s
 
-class Rot:
-    # крупное растение разлагается за год
-    DECAY_SPEED = 1 # неверная установка, значение инициализируется ниже
-    DECAY_MULTIPLIER = 0.3 # скорость гниения, гем больше, тем быстрее
-    def __init__(self, field, sx ,sy, mass = Plant.SEED_MASS+Plant.START_CONSUMED):
-        self.world = field.world
-        self.canvas = field.world.canvas
-        self.field = field
-        self.mass = mass
-        self.state = 0
-        self.color = 'saddle brown' # 'purple4'''dark goldenrod'
-        self.id = self.canvas.create_rectangle(sx-2, sy-2,
-                                               sx+2, sy+2, width=0,
-                                               fill=self.color, tags='rot')
-        self.world.rot[self.id] = self
-        self.field.rot[self.id] = self
-        # self.canvas.tag_lower(self.id)
-        # self.canvas.tag_raise('rot')
 
-    @staticmethod
-    def init_constants():
-        Rot.DECAY_SPEED = Plant.MAX_MASS / wd.MONTS * Rot.DECAY_MULTIPLIER
-
-    # гниль медленно превращается в землю - на каждом ходу образуется немного земли
-    def update_continuous(self):
-        decrement = min(self.mass, self.DECAY_SPEED)
-        self.mass -= decrement
-        self.field.soil += decrement
-        if self.mass == 0:
-            self.become_soil()
-
-    # гниль долго гниет, а потом разом превращается в почву
-    def update(self):
-        self.state += self.DECAY_SPEED
-        if self.mass - self.state < self.DECAY_SPEED :
-            self.become_soil()
-
-
-    def become_soil(self):
-        self.canvas.delete(self.id)
-        self.field.soil += self.mass  # растение превращается в почву
-        del self.world.rot[self.id]
-        del self.field.rot[self.id]
-
-
-class Seed:
-    # условие проростания семечка. Сколько земли должно быть в клетке
-    GROW_UP_CONDITION = 50
-    # сколько лет семечко может пролежать до всхода и не умереть
-    SEED_LIFE = 4
-    def __init__(self, field, sx, sy): # добавлю параметры позже
-        # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
-        # зависела от этого запаса. А сам запас определялся геномом растений
-        self.world = field.world
-        self.field = field
-        self.canvas = field.world.canvas
-        self.color = 'gold'
-        self.age = 0
-        self.sx = sx
-        self.sy = sy
-        self.all_food = Plant.SEED_MASS + Plant.START_CONSUMED
-
-        self.id = self.canvas.create_rectangle(self.sx-3, self.sy-3, self.sx+3, self.sy+3, fill=self.color)
-        self.world.seeds[self.id] = self
-        self.field.seeds[self.id] = self
-
-
-    def update(self):
-        if self.age > self.SEED_LIFE * wd.MONTS:
-            self.become_soil()
-        else:
-            self.age += 1
-            if self.field.soil >= self.GROW_UP_CONDITION:
-                self.grow_up()
-
-
-    def grow_up(self):
-        if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
-            Plant(self.field, self.sx, self.sy)
-        else:
-            Rot(self.field, self.sx, self.sy)
-        self.destroy_seed()
-
-    def become_soil(self):
-        Rot(self.field, self.sx, self.sy, self.all_food)
-        self.destroy_seed()
-
-    def destroy_seed(self):
-        self.canvas.delete(self.id)
-        del self.world.seeds[self.id]
-        del self.field.seeds[self.id]
