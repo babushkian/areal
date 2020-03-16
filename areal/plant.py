@@ -10,43 +10,32 @@ from .rot import Rot
 
 class Being:
 
-    def __init__(self, field, sx, sy):
+    def __init__(self, field, sx, sy, color = None):
         self.world = field.world
         self.field = field
         self.canvas = field.world.canvas
         # координаты экранного пространства,  а не физические
         self.sx = sx
         self.sy = sy
-        self.color = 'lawn green'
+        self.color = color
         self.age = 0
-
-        self.all_consumed_food = START_CONSUMED + SEED_MASS  # еда, потребленная за всю жизнь
-
         self.id = self.canvas.create_rectangle(self.sx - 3, self.sy - 3, self.sx + 3, self.sy + 3, fill=self.color)
-        self.world.plants[self.id] = self
-        self.field.plants[self.id] = self
 
 
 
 
-class Seed:
+
+class Seed(Being):
     # условие проростания семечка. Сколько земли должно быть в клетке
     GROW_UP_CONDITION = 50
     # сколько лет семечко может пролежать до всхода и не умереть
-    SEED_LIFE = 4
+    SEED_LIFE = 5
+
     def __init__(self, field, sx, sy): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
-        self.world = field.world
-        self.field = field
-        self.canvas = field.world.canvas
-        self.color = 'gold'
-        self.age = 0
-        self.sx = sx
-        self.sy = sy
+        super().__init__(field, sx, sy, wd.SEED_COLOR)
         self.all_food = SEED_MASS + START_CONSUMED
-
-        self.id = self.canvas.create_rectangle(self.sx-3, self.sy-3, self.sx+3, self.sy+3, fill=self.color)
         self.world.seeds[self.id] = self
         self.field.seeds[self.id] = self
 
@@ -77,7 +66,7 @@ class Seed:
         del self.field.seeds[self.id]
 
 
-class Plant:
+class Plant(Being):
     # переменные надо заново вычислять после загрузки из конфига
     LIFETIME_PRECENT = 5.9 # количество циклов
     SPREAD_TIME_PRECENT = 0.5  # каждые х% года - плодоношение
@@ -89,19 +78,9 @@ class Plant:
     p_file.write(header)
 
     def __init__(self,  field, sx, sy):
-        self.world = field.world
-        self.field = field
-        self.canvas = field.world.canvas
-        # координаты экранного пространства,  а не физические
-        self.sx = sx
-        self.sy = sy
-        self.color = 'lawn green'
-        self.age = 0
+        super().__init__(field, sx, sy, wd.FRESH_PLANT_COLOR)
         self.mass = SEED_MASS
-
         self.all_consumed_food = START_CONSUMED + SEED_MASS  # еда, потребленная за всю жизнь
-
-        self.id = self.canvas.create_rectangle(self.sx-3, self.sy-3, self.sx+3, self.sy+3, fill=self.color)
         self.world.plants[self.id] = self
         self.field.plants[self.id] = self
 
@@ -130,7 +109,7 @@ class Plant:
         self.field.soil -= self.get
         self.all_consumed_food += self.get
         self.delta = self.get - res_to_live  # растение может получать меньше, чем тратит на жизнь
-        self.color = 'dark olive green' if self.delta < 0 else 'lawn green'
+        self.color = wd.SICK_PLANT_COLOR if self.delta < 0 else wd.FRESH_PLANT_COLOR
         self.mass += self.delta
         if self.mass < 0.5:  # как только масса понижается до минимума, растение гибнет от голода
             self.die()

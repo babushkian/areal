@@ -19,6 +19,12 @@ HEIGHT = 1
 DIM_HYPOT = 1
 MONTS_ANGLE = 1
 
+# цвета объектов
+FRESH_PLANT_COLOR = 'lawn green'
+SICK_PLANT_COLOR = 'dark olive green'
+SEED_COLOR = 'goldenrod' #,'light goldenrod' #, 'light goldenrod yellow' , 'pale goldenrod' ,'gold'
+ROT_COLOR = 'saddle brown'
+
 from areal import weather
 from areal import field as fd
 
@@ -69,8 +75,8 @@ class World:
         self.wead = weather.Weather()
         self.create_fields()
 
-        #for v in range(int(DRAW_DIM/2)-1, int(DRAW_DIM/2)+2):
-        #    self.fields[int(DRAW_DIM/2)][v].soil = 7000
+       #for v in range(int(DRAW_DIM/2)-1, int(DRAW_DIM/2)+2):
+            #self.fields[int(DRAW_DIM/2)][v].soil = 7000
 
         self.plant_setup_3()
         self.update()
