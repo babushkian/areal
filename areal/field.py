@@ -12,7 +12,7 @@ class Field:  # клетка поля
     # расстояние от центра клетки до ее границы в физических единицах
     # есть мение, что тут не вполне правильно, надо разобраться
     FIELD_GRAPH_TO_PHYS_PROPORTION =  1
-    INIT_SOIL = 600 # количество почвы на клетке
+    INIT_SOIL = 900 # количество почвы на клетке
     f_file = open('field_info.csv', 'w', encoding='UTF16')
     header = 'global time\tcoordinates\tplants\trot\tbiomass\trot mass\tsoil\ttotal mass\n'
     f_file.write(header)

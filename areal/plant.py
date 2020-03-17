@@ -69,7 +69,7 @@ class Seed(Being):
 class Plant(Being):
     # переменные надо заново вычислять после загрузки из конфига
     LIFETIME_PRECENT = 4 # количество циклов
-    SPREAD_TIME_PRECENT = 0.5  # каждые х% года - плодоношение
+    SPREAD_TIME_PRECENT = 0.25  # период размножения - в виде процента от года
     EPSILON = 0.3
 
 
