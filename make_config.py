@@ -3,7 +3,7 @@ config = configparser.ConfigParser()
 config.add_section('main_window')
 
 
-config.set('main_window', 'MONTS', str(16))  # кличество тиков в одном году. позволяет настраивать плавность развития
+config.set('main_window', 'MONTS', str(24))  # кличество тиков в одном году. позволяет настраивать плавность развития
 config.set('main_window', 'MAX_WIDNDOW',  str(960)) # максимальная высота игрового поля в пикселях
 config.set('main_window', 'DIMENSION', str(100))  # прространственная размерность: +- 100 по обоим координатам
 config.set('main_window', 'CHECK_DIM', str(48))  # размер одной клетки в пикселях
