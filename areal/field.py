@@ -82,14 +82,14 @@ class Field:  # клетка поля
         else:
             pt.Rot(self, sx, sy)
 
-    def create_seed(self):
+    def create_seed(self, seed_mass):
         # определяем координаты новорожденного растения
         # физические координаты
         x = self.lu_x + random.randrange(int(self.rd_x - self.lu_x))
         y = self.rd_y + random.randrange(int(self.lu_y - self.rd_y))
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
-        pt.Seed(self, sx, sy)
+        pt.Seed(self, sx, sy, seed_mass)
 
 
 

@@ -30,12 +30,15 @@ class Seed(Being):
     GROW_UP_CONDITION = 50
     # сколько лет семечко может пролежать до всхода и не умереть
     SEED_LIFE = 5
+    # время, в течении которого семечко не прорастает (в годах)
+    PROHIBITED_GROW_UP = 2
 
-    def __init__(self, field, sx, sy): # добавлю параметры позже
+    def __init__(self, field, sx, sy, seed_mass): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
         super().__init__(field, sx, sy, wd.SEED_COLOR)
-        self.all_food = SEED_MASS + START_CONSUMED
+        self.all_food = seed_mass
+        self.grow_up_age = Seed.PROHIBITED_GROW_UP * wd.MONTS
         self.world.seeds[self.id] = self
         self.field.seeds[self.id] = self
 
@@ -45,7 +48,7 @@ class Seed(Being):
             self.become_soil()
         else:
             self.age += 1
-            if self.field.soil >= self.GROW_UP_CONDITION:
+            if self.field.soil >= self.GROW_UP_CONDITION and self.age >= self.grow_up_age:
                 self.grow_up()
 
 
@@ -68,8 +71,8 @@ class Seed(Being):
 
 class Plant(Being):
     # переменные надо заново вычислять после загрузки из конфига
-    LIFETIME_PRECENT = 4 # количество циклов
-    SPREAD_TIME_PRECENT = 0.25  # период размножения - в виде процента от года
+    LIFETIME_YEARS = 4 # количество циклов
+    FRUITING_PERIOD = 0.25  # период размножения - в виде процента от года
     EPSILON = 0.3
 
 
@@ -86,8 +89,8 @@ class Plant(Being):
 
     @staticmethod
     def init_constants():
-        Plant.LIFETIME = int(Plant.LIFETIME_PRECENT * wd.MONTS)
-        Plant.BREED_TIME = int(Plant.SPREAD_TIME_PRECENT * wd.MONTS)
+        Plant.LIFETIME = int(Plant.LIFETIME_YEARS * wd.MONTS)
+        Plant.BREED_TIME = int(Plant.FRUITING_PERIOD * wd.MONTS)
         Plant.TIME_COEF = 4 / wd.MONTS  # коэффициент влияющий на скорость роста и питания
         # чем больше скважность, тем более мелкими порциями растение питается
         Plant.GROW_UP_PER_IIC = 15 / wd.MONTS
@@ -114,17 +117,27 @@ class Plant(Being):
         if self.mass < 0.5:  # как только масса понижается до минимума, растение гибнет от голода
             self.die()
 
+
     def update(self):
         if self.age == self.LIFETIME:
             self.die()
         else:
-            if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.99 * MAX_MASS:
+            if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * MAX_MASS:
                 self.world.to_breed.append(self)  # встает в очередь на размножение
-                self.mass -= START_CONSUMED + SEED_MASS
-                self.all_consumed_food -= START_CONSUMED + SEED_MASS
             self.feed()
             self.age += 1
             self.canvas.itemconfigure(self.id, fill=self.color)
+
+    def split_mass(self):
+        """
+        Вызывается при размножении. Уменьшает массу растения нм амссу семечка.
+        Возвращает массу семечка
+        :return: seed_mass
+        """
+        full_seed_mass = START_CONSUMED + SEED_MASS
+        self.mass -= full_seed_mass
+        self.all_consumed_food -= full_seed_mass
+        return full_seed_mass
 
     def die(self, string=None):
         if string is not None:

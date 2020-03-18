@@ -110,8 +110,8 @@ class World:
     def create_plant(self, row, col):
         self.fields[row][col].create_plant()
 
-    def create_seed(self, row, col):
-        self.fields[row][col].create_seed()
+    def create_seed(self, row, col, seed_mass):
+        self.fields[row][col].create_seed(seed_mass)
 
     def update_seeds(self):
         seeds_list = list(self.seeds)
@@ -123,7 +123,8 @@ class World:
             # выбираем случайную клетку в окрестностях, чтобы засеять семя
             l = len(p.field.area)
             field_coord = p.field.area[random.randrange(l)]
-            self.create_seed(field_coord[0], field_coord[1])
+            seed_mass = p.split_mass()
+            self.create_seed(field_coord[0], field_coord[1], seed_mass)
         self.to_breed = []
 
 
