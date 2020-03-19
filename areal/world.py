@@ -186,7 +186,7 @@ class World:
         for seed in self.seeds:
             seed_mass += self.seeds[seed].all_food
         s += f'{full}\t{starving}\t{len(self.seeds)}\t{len(self.rot)}\t'
-        total_mass = biomass + rot_mass + self.total_soil
+        total_mass = seed_mass + biomass + rot_mass + self.total_soil
         s += f'{seed_mass:8.1f}\t{biomass:8.1f}\t{rot_mass:8.1f}\t{self.total_soil:8.1f}\t{total_mass:8.1f}\n'
         plants_info.write(s.replace('.', ','))
 
