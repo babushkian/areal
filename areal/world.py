@@ -196,8 +196,8 @@ class World:
     def update(self):
         self.global_time += 1
         self.years = self.global_time//MONTS
-        print('------ TIME: %d:%02d' % (self.years, self.time))
-        print('soil: %8.2f' % self.total_soil)
+        print(f'------ TIME: {self.years}:{self.time}')
+        print(f'soil: {self.total_soil:8.2f}')
         self.time +=1
         if self.time == MONTS:
             self.time = 0
