@@ -1,23 +1,20 @@
 ﻿import random
 import math
 
-from areal import world as wd
 from areal import plant as pt
-
+from areal import constants as cn
 
 class Field:  # клетка поля
     # максимальное количество растений на клетку, чтобы симуляция не тормозила
-    MAX_PLANTS_IN_FIELD = 5
+    MAX_PLANTS_IN_FIELD = cn.MAX_PLANTS_IN_FIELD
+    # физическое расстояние от центра до края клетки  (половина клетки!!, т.к. PHYS_SIZE - половина игрового поля)
+    FIELD_GRAPH_TO_PHYS_PROPORTION = cn.PHYS_SIZE / cn.FIELDS_NUMBER_BY_SIDE
 
-    # расстояние от центра клетки до ее границы в физических единицах
-    # есть мение, что тут не вполне правильно, надо разобраться
-    FIELD_GRAPH_TO_PHYS_PROPORTION =  1
-    INIT_SOIL = 900 # количество почвы на клетке
     f_file = open('field_info.csv', 'w', encoding='UTF16')
     header = 'global time\tcoordinates\tplants\trot\tbiomass\trot mass\tsoil\ttotal mass\n'
     f_file.write(header)
 
-    def __init__(self, world, row, col):
+    def __init__(self, world, row, col, soil = cn.INIT_SOIL):
         self.world = world
         self.canvas = world.canvas
         self.row = row
@@ -28,24 +25,19 @@ class Field:  # клетка поля
         self.plant_mass = 0
         self.rot_mass = 0
 
-        self.soil = self.INIT_SOIL
+        self.soil = soil
         # физические координаты поля: его центра и краев
         self.center_x, self.center_y = self.graph_to_phys(row, col)
         self.lu_x = self.center_x - self.FIELD_GRAPH_TO_PHYS_PROPORTION # left-up conner
         self.lu_y = self.center_y + self.FIELD_GRAPH_TO_PHYS_PROPORTION
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
-        cd = wd.CHECK_DIM # размер клетки в пикселях. Присваивание сделано для сокращения записи
+        cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
         self.shape = self.canvas.create_rectangle(cd * row, cd * col,
                                                   cd * row + cd, cd * col + cd,
                                                   width=0, fill='#888888')
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
 
-    @staticmethod
-    def init_constants():
-        Field.FIELD_GRAPH_TO_PHYS_PROPORTION = wd.DIMENSION / wd.DRAW_DIM
-        pt.Plant.init_constants()
-        pt.Rot.init_constants()
 
     def spread_area(self):
         area = []
@@ -53,7 +45,7 @@ class Field:  # клетка поля
         c_start = self.col - 1
         for r in range(r_start, self.row +2):
             for c in range(c_start, self.col +2):
-                if r in range(wd.DRAW_DIM) and c in range(wd.DRAW_DIM):  # проверяем, чтобы соседи не вылезали за границы игрового поля
+                if r in range(cn.FIELDS_NUMBER_BY_SIDE) and c in range(cn.FIELDS_NUMBER_BY_SIDE):  # проверяем, чтобы соседи не вылезали за границы игрового поля
                     area.append((r, c))
         return area
 
@@ -117,8 +109,8 @@ class Field:  # клетка поля
 
     @staticmethod
     def phys_to_screen(x, y):
-        side = 2 * wd.DIMENSION
-        scr_len = wd.DRAW_DIM * wd.CHECK_DIM
+        side = 2 * cn.PHYS_SIZE
+        scr_len = cn.FIELDS_NUMBER_BY_SIDE * cn.FIELD_SIZE_PIXELS
         proportion = scr_len / side
         sx = math.floor(x * proportion + scr_len / 2)
         sy = math.floor(scr_len / 2 - y * proportion)
@@ -126,8 +118,8 @@ class Field:  # клетка поля
 
     @staticmethod
     def graph_to_phys(row, col):
-        side = 2*wd.DIMENSION
-        proportion = side/wd.DRAW_DIM
-        x = (row + .5) *proportion - wd.DIMENSION
-        y = wd.DIMENSION - (col + .5) *proportion
+        side = 2*cn.PHYS_SIZE
+        proportion = side/cn.FIELDS_NUMBER_BY_SIDE
+        x = (row + .5) *proportion - cn.PHYS_SIZE
+        y = cn.PHYS_SIZE - (col + .5) *proportion
         return x, y

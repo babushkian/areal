@@ -1,12 +1,9 @@
 ﻿from areal import world as wd
 from areal import field as fd
+from areal import constants as cn
 
 
-START_CONSUMED = 5  # растение создается с некоторым количеством потребленной почвы
-MAX_MASS = 30
-SEED_MASS = 1
-
-from .rot import Rot
+from areal.rot import Rot
 
 class Being:
 
@@ -23,32 +20,25 @@ class Being:
 
 
 
-
-
 class Seed(Being):
-    # условие проростания семечка. Сколько земли должно быть в клетке
-    GROW_UP_CONDITION = 50
-    # сколько лет семечко может пролежать до всхода и не умереть
-    SEED_LIFE = 5
-    # время, в течении которого семечко не прорастает (в годах)
-    PROHIBITED_GROW_UP = 2
+
 
     def __init__(self, field, sx, sy, seed_mass): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
-        super().__init__(field, sx, sy, wd.SEED_COLOR)
+        super().__init__(field, sx, sy, cn.SEED_COLOR)
         self.all_food = seed_mass
-        self.grow_up_age = Seed.PROHIBITED_GROW_UP * wd.MONTS
+        self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.world.seeds[self.id] = self
         self.field.seeds[self.id] = self
 
 
     def update(self):
-        if self.age > self.SEED_LIFE * wd.MONTS:
+        if self.age > cn.SEED_LIFE * cn.MONTHS:
             self.become_soil()
         else:
             self.age += 1
-            if self.field.soil >= self.GROW_UP_CONDITION and self.age >= self.grow_up_age:
+            if self.field.soil >= cn.SEED_GROW_UP_CONDITION and self.age >= self.grow_up_age:
                 self.grow_up()
 
 
@@ -70,38 +60,31 @@ class Seed(Being):
 
 
 class Plant(Being):
-    # переменные надо заново вычислять после загрузки из конфига
-    LIFETIME_YEARS = 4 # количество циклов
-    FRUITING_PERIOD = 0.25  # период размножения - в виде процента от года
+    LIFETIME = int(cn.PLANT_LIFETIME_YEARS * cn.MONTHS)
+    BREED_TIME = int(cn.FRUITING_PERIOD * cn.MONTHS)
+    TIME_COEF = 4 / cn.MONTHS  # коэффициент влияющий на скорость роста и питания
+    # чем больше скважность, тем более мелкими порциями растение питается
+    GROW_UP_PER_IIC = 15 / cn.MONTHS
+    ALPHA = 0.1 * GROW_UP_PER_IIC
+    BETA = 0.3 * GROW_UP_PER_IIC
+    GAMA = 0.5 * GROW_UP_PER_IIC
     EPSILON = 0.3
-
 
     header = 'time\tID\tpmalnt coords\tage\tmass\ttotal food consumed\tfood to live\t food to grow\t food ability\tget food\tmass delta\tsoil in field\n'
     p_file = open('plant_table.csv', 'w', encoding='UTF16')
     p_file.write(header)
 
     def __init__(self,  field, sx, sy):
-        super().__init__(field, sx, sy, wd.FRESH_PLANT_COLOR)
-        self.mass = SEED_MASS
-        self.all_consumed_food = START_CONSUMED + SEED_MASS  # еда, потребленная за всю жизнь
+        super().__init__(field, sx, sy, cn.FRESH_PLANT_COLOR)
+        self.mass = cn.SEED_MASS
+        self.all_consumed_food = cn.PLANT_START_CONSUMED + cn.SEED_MASS  # еда, потребленная за всю жизнь
         self.world.plants[self.id] = self
         self.field.plants[self.id] = self
-
-    @staticmethod
-    def init_constants():
-        Plant.LIFETIME = int(Plant.LIFETIME_YEARS * wd.MONTS)
-        Plant.BREED_TIME = int(Plant.FRUITING_PERIOD * wd.MONTS)
-        Plant.TIME_COEF = 4 / wd.MONTS  # коэффициент влияющий на скорость роста и питания
-        # чем больше скважность, тем более мелкими порциями растение питается
-        Plant.GROW_UP_PER_IIC = 15 / wd.MONTS
-        Plant.ALPHA = 0.1 * Plant.GROW_UP_PER_IIC
-        Plant.BETA = 0.3 * Plant.GROW_UP_PER_IIC
-        Plant.GAMA = 0.5 * Plant.GROW_UP_PER_IIC
 
 
     def count_needs(self):
         self.res_to_live = self.ALPHA * self.mass  # сколько ресурсов нужно просто на поддержание жизни
-        self.res_to_grow = self.BETA * (MAX_MASS - self.mass)
+        self.res_to_grow = self.BETA * (cn.PLANT_MAX_MASS - self.mass)
         self.res_ability = self.GAMA * (1 + self.EPSILON * self.mass)  # возможность добыть еды за ход
         return self.res_to_live, self.res_to_grow, self.res_ability
 
@@ -112,7 +95,7 @@ class Plant(Being):
         self.field.soil -= self.get
         self.all_consumed_food += self.get
         self.delta = self.get - res_to_live  # растение может получать меньше, чем тратит на жизнь
-        self.color = wd.SICK_PLANT_COLOR if self.delta < 0 else wd.FRESH_PLANT_COLOR
+        self.color = cn.SICK_PLANT_COLOR if self.delta < 0 else cn.FRESH_PLANT_COLOR
         self.mass += self.delta
         if self.mass < 0.5:  # как только масса понижается до минимума, растение гибнет от голода
             self.die()
@@ -122,7 +105,7 @@ class Plant(Being):
         if self.age == self.LIFETIME:
             self.die()
         else:
-            if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * MAX_MASS:
+            if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * cn.PLANT_MAX_MASS:
                 self.world.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
             self.age += 1
@@ -134,7 +117,7 @@ class Plant(Being):
         Возвращает массу семечка
         :return: seed_mass
         """
-        full_seed_mass = START_CONSUMED + SEED_MASS
+        full_seed_mass = cn.PLANT_START_CONSUMED + cn.SEED_MASS
         self.mass -= full_seed_mass
         self.all_consumed_food -= full_seed_mass
         return full_seed_mass

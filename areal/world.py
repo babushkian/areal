@@ -2,55 +2,12 @@
 import random
 import math
 
-
-
-# для эксперимента у всех констант будут единичные значения, а потом эти константы будут загружаться из конфига
-
-random.seed(666)
-MONTS = 1  # кличество тиков в одном году. позволяет настраивать плавность развития
-MAX_WIDNDOW = 1 # максимальная высота игрового поля в пикселях
-DIMENSION = 1  # прространственная размерность: +- 100 по обоим координатам
-CHECK_DIM = 1  # размер одной клетки в пикселях
-DRAW_DIM = 1  # размерность поля в клетках
-
-
-WIDTH = 1
-HEIGHT = 1
-DIM_HYPOT = 1
-MONTS_ANGLE = 1
-
-# цвета объектов
-FRESH_PLANT_COLOR = 'lawn green'
-SICK_PLANT_COLOR = 'dark olive green'
-SEED_COLOR = 'goldenrod' #,'light goldenrod' #, 'light goldenrod yellow' , 'pale goldenrod' ,'gold'
-ROT_COLOR = 'saddle brown'
-
+from areal import constants as cn
 from areal import weather
 from areal import field as fd
 
-def init_constants():
-    global WIDTH
-    global HEIGHT
-    global DIM_HYPOT
-    global MONTS_ANGLE
-    global CHECK_DIM
-
-    if CHECK_DIM * DRAW_DIM > MAX_WIDNDOW:
-        CHECK_DIM = MAX_WIDNDOW // DRAW_DIM
-    WIDTH = CHECK_DIM * DRAW_DIM # размеры окна в пикселях
-    HEIGHT = CHECK_DIM * DRAW_DIM
-    DIM_HYPOT = math.hypot(DIMENSION, DIMENSION)
-    MONTS_ANGLE = math.pi * 2 / MONTS  # погодный угол, за год проходит все 360 градусов
-    print('Значения переменных загружены')
-
-    print("CHECK_DIM ", CHECK_DIM)
-    print("DRAW_DIM ", DRAW_DIM)
-    print("DIM_HYPOT ", DIM_HYPOT)
-    print("MONTS ", MONTS)
-    print("DIMENSION ", DIMENSION)
-    print("WIDTH  ", WIDTH )
-    fd.Field.init_constants()
-
+# для эксперимента у всех констант будут единичные значения, а потом эти константы будут загружаться из конфига
+#random.seed(666)
 
 
 plants_info = open('plants_info.csv', 'w', encoding='UTF16')
@@ -59,11 +16,11 @@ plants_info.write(header)
 
 class World:
     def __init__(self, parent):
-        self.canvas = Canvas(parent, width=WIDTH, heigh=HEIGHT, bg='gray80')
+        self.canvas = Canvas(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray80')
         self.canvas.pack(expand=YES, fill=BOTH)
         # создаем пустое игровое поле
-        temp = [None for _ in range(DRAW_DIM)]
-        self.fields = [temp[:] for x in range(DRAW_DIM)]
+        temp = [None for _ in range(cn.FIELDS_NUMBER_BY_SIDE)]
+        self.fields = [temp[:] for x in range(cn.FIELDS_NUMBER_BY_SIDE)]
         self.time = 0
         self.global_time = 0
         self.years = 0
@@ -72,11 +29,8 @@ class World:
         self.plants = {}
         self.rot = {}
         self.to_breed = []
-        self.wead = weather.Weather()
+        self.weather = weather.Weather()
         self.create_fields()
-
-       #for v in range(int(DRAW_DIM/2)-1, int(DRAW_DIM/2)+2):
-            #self.fields[int(DRAW_DIM/2)][v].soil = 7000
 
         self.plant_setup_3()
         self.update()
@@ -88,22 +42,22 @@ class World:
 
     def plant_setup_1(self):
         for _ in range(5):
-            self.create_plant(int(DRAW_DIM/2), int(DRAW_DIM/2))
+            self.create_plant(int(cn.FIELDS_NUMBER_BY_SIDE / 2), int(cn.FIELDS_NUMBER_BY_SIDE / 2))
 
     def plant_setup_2(self):
-        for x in range(int(DRAW_DIM/2)-2, int(DRAW_DIM/2)+3):
-            for y in range(int(DRAW_DIM / 2) - 2, int(DRAW_DIM / 2) + 3):
+        for x in range(int(cn.FIELDS_NUMBER_BY_SIDE / 2) - 2, int(cn.FIELDS_NUMBER_BY_SIDE / 2) + 3):
+            for y in range(int(cn.FIELDS_NUMBER_BY_SIDE / 2) - 2, int(cn.FIELDS_NUMBER_BY_SIDE / 2) + 3):
                 self.create_plant(x, y)
 
     def plant_setup_3(self):
-        for x in range(DRAW_DIM):
-            for y in range(DRAW_DIM):
+        for x in range(cn.FIELDS_NUMBER_BY_SIDE):
+            for y in range(cn.FIELDS_NUMBER_BY_SIDE):
                 self.create_plant(x, y)
 
 
     def create_fields(self):
-        for row in range(DRAW_DIM):
-            for col in range(DRAW_DIM):
+        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
+            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 self.fields[row][col] = fd.Field(self, row, col)
 
 
@@ -152,12 +106,12 @@ class World:
 
     def update_fields(self):
         self.total_soil = 0
-        for row in range(DRAW_DIM):
-            for col in range(DRAW_DIM):
+        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
+            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 '''
                 вычисляется цвет температуры
                 x, y = graph_to_phys(row, col)
-                cur_temp =  self.wead.temp_in_field(x, y, self.time)
+                cur_temp =  self.weather.temp_in_field(x, y, self.time)
                 back = self.calculate_color(cur_temp)
                 '''
                 #цвет почвы
@@ -195,17 +149,17 @@ class World:
 
     def update(self):
         self.global_time += 1
-        self.years = self.global_time//MONTS
+        self.years = self.global_time//cn.MONTHS
         print(f'------ TIME: {self.years}:{self.time}')
         print(f'soil: {self.total_soil:8.2f}')
         self.time +=1
-        if self.time == MONTS:
+        if self.time == cn.MONTHS:
             self.time = 0
         self.update_rot()
         self.update_seeds()
         self.update_plants()
         self.update_fields()
         self.write_plants() # запись параметров всех растений в файлы
-        if self.global_time < MONTS * 10000:
+        if self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
             self.canvas.after(80, self.update)
 
