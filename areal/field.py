@@ -11,17 +11,21 @@ class Field:  # клетка поля
     FIELD_GRAPH_TO_PHYS_PROPORTION = cn.PHYS_SIZE / cn.FIELDS_NUMBER_BY_SIDE
 
     f_file = open('field_info.csv', 'w', encoding='UTF16')
-    header = 'global time\tcoordinates\tplants\trot\tbiomass\trot mass\tsoil\ttotal mass\n'
+    header = 'global time\tcoordinates\tplants\trot\tseeds\tbiomass\trot mass\tseeds mass\tsoil\ttotal mass\n'
     f_file.write(header)
 
     def __init__(self, world, row, col, soil = cn.INIT_SOIL):
         self.world = world
-        self.canvas = world.canvas
         self.row = row
         self.col = col
+        self.plant_num = 0
+        self.starving = 0
+        self.seed_num = 0
+        self.rot_num = 0
         self.plants = {} # словарь растениц, размещенных на данной клетке; в качестве ключа - id графического объекта
         self.rot = {} # гниль на клетке
         self.seeds = {} # семена на клетке
+        self.seed_mass =0
         self.plant_mass = 0
         self.rot_mass = 0
 
@@ -33,7 +37,7 @@ class Field:  # клетка поля
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
-        self.shape = self.canvas.create_rectangle(cd * row, cd * col,
+        self.shape = self.world.create_rectangle(cd * row, cd * col,
                                                   cd * row + cd, cd * col + cd,
                                                   width=0, fill='#888888')
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
@@ -54,7 +58,7 @@ class Field:  # клетка поля
         '''
         присваивает цвет полю. цвет вычисляется в World
         '''
-        self.canvas.itemconfigure(self.shape, fill=color)
+        self.world.itemconfigure(self.shape, fill=color)
 
     def create_plant(self):
         """
@@ -84,27 +88,36 @@ class Field:  # клетка поля
         pt.Seed(self, sx, sy, seed_mass)
 
 
-
-
     def info(self):
+        self.plant_num = len(self.plants)
+        self.rot_num = len(self.rot)
+        self.seed_num = len(self.seeds)
+        self.starving = 0
         self.plant_mass = 0
         for p in self.plants:
-            self.plant_mass += self.plants[p].all_consumed_food
+            self.plant_mass += self.plants[p].all_energy
+            if self.plants[p].delta < 0:
+                self.starving += 1
         self.rot_mass = 0
         for r in self.rot:
             self.rot_mass += self.rot[r].mass
+        self.seed_mass =0
+        for s in self.seeds:
+            self.seed_mass += self.seeds[s].all_energy
         self.write_info()
 
     def write_info(self):
         p1 = str(self.world.global_time)
         p2 = '[%2d][%2d]' % (self.row, self.col)
-        p3 = '%2d' % len(self.plants)
-        p4 = '%2d' % len(self.rot)
+        p3 = '%2d' % self.plant_num
+        p4 = '%2d' % self.rot_num
+        p4_1 = '%2d' % self.seed_num
         p5 = '%6.1f' % self.plant_mass
         p6 = '%6.1f' % self.rot_mass
+        p7 = '%6.1f' % self.seed_mass
         soil = '%7.1f' % self.soil
-        total_mass = '%7.1f\n' % (self.plant_mass + self.rot_mass + self.soil)
-        field_string = '\t'.join([p1, p2, p3, p4, p5, p6, soil, total_mass]).replace('.', ',')
+        total_mass = '%7.1f\n' % (self.plant_mass + self.rot_mass + self.seed_mass + self.soil)
+        field_string = '\t'.join([p1, p2, p3, p4, p4_1, p5, p6, p7, soil, total_mass]).replace('.', ',')
         self.f_file.write(field_string)
 
     @staticmethod

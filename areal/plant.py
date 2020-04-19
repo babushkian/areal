@@ -10,24 +10,21 @@ class Being:
     def __init__(self, field, sx, sy, color = None):
         self.world = field.world
         self.field = field
-        self.canvas = field.world.canvas
         # координаты экранного пространства,  а не физические
         self.sx = sx
         self.sy = sy
         self.color = color
         self.age = 0
-        self.id = self.canvas.create_rectangle(self.sx - 3, self.sy - 3, self.sx + 3, self.sy + 3, fill=self.color)
+        self.id = self.world.create_rectangle(self.sx - 3, self.sy - 3, self.sx + 3, self.sy + 3, fill=self.color)
 
 
 
 class Seed(Being):
-
-
     def __init__(self, field, sx, sy, seed_mass): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
         super().__init__(field, sx, sy, cn.SEED_COLOR)
-        self.all_food = seed_mass
+        self.all_energy = seed_mass
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.world.seeds[self.id] = self
         self.field.seeds[self.id] = self
@@ -50,11 +47,11 @@ class Seed(Being):
         self.destroy_seed()
 
     def become_soil(self):
-        Rot(self.field, self.sx, self.sy, self.all_food)
+        Rot(self.field, self.sx, self.sy, self.all_energy)
         self.destroy_seed()
 
     def destroy_seed(self):
-        self.canvas.delete(self.id)
+        self.world.delete(self.id)
         del self.world.seeds[self.id]
         del self.field.seeds[self.id]
 
@@ -77,7 +74,7 @@ class Plant(Being):
     def __init__(self,  field, sx, sy):
         super().__init__(field, sx, sy, cn.FRESH_PLANT_COLOR)
         self.mass = cn.SEED_MASS
-        self.all_consumed_food = cn.PLANT_START_CONSUMED + cn.SEED_MASS  # еда, потребленная за всю жизнь
+        self.all_energy = cn.PLANT_START_CONSUMED + cn.SEED_MASS  # еда, потребленная за всю жизнь
         self.world.plants[self.id] = self
         self.field.plants[self.id] = self
 
@@ -93,7 +90,7 @@ class Plant(Being):
         want =  min(res_to_live + res_to_grow, res_ability)
         self.get = min(want, self.field.soil)
         self.field.soil -= self.get
-        self.all_consumed_food += self.get
+        self.all_energy += self.get
         self.delta = self.get - res_to_live  # растение может получать меньше, чем тратит на жизнь
         self.color = cn.SICK_PLANT_COLOR if self.delta < 0 else cn.FRESH_PLANT_COLOR
         self.mass += self.delta
@@ -109,7 +106,7 @@ class Plant(Being):
                 self.world.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
             self.age += 1
-            self.canvas.itemconfigure(self.id, fill=self.color)
+            self.world.itemconfigure(self.id, fill=self.color)
 
     def split_mass(self):
         """
@@ -119,14 +116,14 @@ class Plant(Being):
         """
         full_seed_mass = cn.PLANT_START_CONSUMED + cn.SEED_MASS
         self.mass -= full_seed_mass
-        self.all_consumed_food -= full_seed_mass
+        self.all_energy -= full_seed_mass
         return full_seed_mass
 
     def die(self, string=None):
         if string is not None:
             print("DIES of ", string)
-        self.canvas.delete(self.id)
-        Rot(self.field, self.sx, self.sy, self.all_consumed_food)
+        self.world.delete(self.id)
+        Rot(self.field, self.sx, self.sy, self.all_energy)
         del self.world.plants[self.id]
         del self.field.plants[self.id]
 
@@ -136,7 +133,7 @@ class Plant(Being):
         plant_coords = '[%2d][%2d]' % (self.field.row, self.field.col)
         p3 = str(self.age)
         p4 = '%4.1f' % self.mass
-        p5 = '%5.1f' % self.all_consumed_food
+        p5 = '%5.1f' % self.all_energy
         p6 = '%4.1f' % self.res_to_live
         p7 = '%4.1f' % self.res_to_grow
         p8 = '%4.1f' % self.res_ability
@@ -151,7 +148,7 @@ class Plant(Being):
         s += 'ID = %d\t' %self.id
         s += 'age = %d\t' % self.age
         s += 'mass = %4.1f\t' % self.mass
-        s += 'consumed = %5.1f\n' % self.all_consumed_food
+        s += 'consumed = %5.1f\n' % self.all_energy
         s += 'to live = %4.1f\t' % self.res_to_live
         s += 'to grow = %4.1f\t' % self.res_to_grow
         s += 'abil = %4.1f\t' % self.res_ability
