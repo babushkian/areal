@@ -2,28 +2,19 @@
 from areal import field as fd
 from areal import constants as cn
 
-
+from areal.proto import Plant_proto
 from areal.rot import Rot
 
-class Being:
-
-    def __init__(self, field, sx, sy, color = None):
-        self.world = field.world
-        self.field = field
-        # координаты экранного пространства,  а не физические
-        self.sx = sx
-        self.sy = sy
-        self.color = color
-        self.age = 0
-        self.id = self.world.create_rectangle(self.sx - 3, self.sy - 3, self.sx + 3, self.sy + 3, fill=self.color)
 
 
 
-class Seed(Being):
+class Seed(Plant_proto):
     def __init__(self, field, sx, sy, seed_mass): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
-        super().__init__(field, sx, sy, cn.SEED_COLOR)
+        super().__init__(field, sx, sy, cn.GRAPHICS)
+        self.name = 'seed'
+        self.create_img(**cn.DRAW_PARAMS[self.name])
         self.all_energy = seed_mass
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.world.seeds[self.id] = self
@@ -51,12 +42,12 @@ class Seed(Being):
         self.destroy_seed()
 
     def destroy_seed(self):
-        self.world.delete(self.id)
+        self.del_img()
         del self.world.seeds[self.id]
         del self.field.seeds[self.id]
 
 
-class Plant(Being):
+class Plant(Plant_proto):
     LIFETIME = int(cn.PLANT_LIFETIME_YEARS * cn.MONTHS)
     BREED_TIME = int(cn.FRUITING_PERIOD * cn.MONTHS)
     TIME_COEF = 4 / cn.MONTHS  # коэффициент влияющий на скорость роста и питания
@@ -72,7 +63,9 @@ class Plant(Being):
     p_file.write(header)
 
     def __init__(self,  field, sx, sy):
-        super().__init__(field, sx, sy, cn.FRESH_PLANT_COLOR)
+        super().__init__(field, sx, sy, cn.GRAPHICS)
+        self.name = 'plant'
+        self.create_img(**cn.DRAW_PARAMS[self.name])
         self.mass = cn.SEED_MASS
         self.all_energy = cn.PLANT_START_CONSUMED + cn.SEED_MASS  # еда, потребленная за всю жизнь
         self.world.plants[self.id] = self
@@ -122,7 +115,7 @@ class Plant(Being):
     def die(self, string=None):
         if string is not None:
             print("DIES of ", string)
-        self.world.delete(self.id)
+        self.del_img()
         Rot(self.field, self.sx, self.sy, self.all_energy)
         del self.world.plants[self.id]
         del self.field.plants[self.id]

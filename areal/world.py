@@ -171,6 +171,7 @@ class World(Canvas):
         self.update_rot()
         self.update_seeds()
         self.update_plants()
+        self.tag_raise('plant')
         self.update_fields()
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_plants() # запись параметров всех растений в файлы

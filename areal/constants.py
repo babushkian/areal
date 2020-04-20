@@ -1,15 +1,25 @@
 ﻿import math
 
-GRAPHICS = False # будет ли отображаться симуляция на экране
-SIMULATION_PERIOD = 400  # количество лет, по истечении которых симуляция завершается
+GRAPHICS = True # будет ли отображаться симуляция на экране
+SIMULATION_PERIOD = 1000  # количество лет, по истечении которых симуляция завершается
+GLOBAL_COUNTER = 0
 
+def global_counter():
+    """
+    Функция выдает индивидуальные номера для объектов на холсте когда графический
+    режим отключен. В противном случае id создаются при создании графических объектов
+    """
+    global GLOBAL_COUNTER
+    id = GLOBAL_COUNTER
+    GLOBAL_COUNTER += 1
+    return id
 
 
 MONTHS = 24  # кличество тиков в одном году. позволяет настраивать плавность развития
 MAX_WIDNDOW = 720 # максимальнный линейный размер игрового поля в пикселях
 PHYS_SIZE = 100  # физические размеры игрового поля: +- 100 по обоим координатам
-FIELD_SIZE_PIXELS = 48  # размер одной клетки в пикселях
-FIELDS_NUMBER_BY_SIDE = 15  # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
+FIELD_SIZE_PIXELS = 128  # размер одной клетки в пикселях
+FIELDS_NUMBER_BY_SIDE = 21  # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
 
 
 if FIELD_SIZE_PIXELS * FIELDS_NUMBER_BY_SIDE > MAX_WIDNDOW:
@@ -25,9 +35,17 @@ MONTS_ANGLE = math.pi * 2 / MONTHS
 
 # цвета объектов
 FRESH_PLANT_COLOR = 'lawn green'
-SICK_PLANT_COLOR = 'dark olive green'
+SICK_PLANT_COLOR = 'forest green'#'dark olive green'
 SEED_COLOR = 'goldenrod' #,'light goldenrod' #, 'light goldenrod yellow' , 'pale goldenrod' ,'gold'
 ROT_COLOR = 'saddle brown'
+
+DRAW_PARAMS = {'plant':{'size':4, 'color': FRESH_PLANT_COLOR, 'border':1},
+                'seed':{'size':2, 'color': SEED_COLOR, 'border':0},
+                'rot':{'size':2, 'color': ROT_COLOR, 'border':0},
+
+}
+
+
 
 # КЛЕТКА (класс Field )
 INIT_SOIL = 900  # количество почвы на клетке
