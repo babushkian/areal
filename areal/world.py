@@ -6,9 +6,6 @@ from areal import constants as cn
 from areal import weather
 from areal import field as fd
 
-# для эксперимента у всех констант будут единичные значения, а потом эти константы будут загружаться из конфига
-#random.seed(666)
-
 
 plants_info = open('plants_info.csv', 'w', encoding='UTF16')
 header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
@@ -16,7 +13,7 @@ plants_info.write(header)
 
 class World(Canvas):
     def __init__(self, parent, app):
-        super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray80')
+        super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
         self.app = app
         self.newborn = True
         # создаем пустое игровое поле
@@ -75,7 +72,7 @@ class World(Canvas):
     def create_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col] = fd.Field(self, row, col)
+                self.fields[row][col] = fd.Field(self, self.app, row, col)
 
     def create_plant(self, row, col):
         self.fields[row][col].create_plant()
@@ -96,11 +93,25 @@ class World(Canvas):
         if self.to_breed:
             self.breed_plants()
         plant_list = list(self.plants)
+        # перемешивание растений и семян для более равномерного готбора
+        pl = len(plant_list)
+        if pl > 3:
+            for _ in range(cn.FIELDS_NUMBER_BY_SIDE): # неаонятно, есть ли эффект от перемешивания? Не заметно
+                pl = len(plant_list)
+                x = random.randrange(pl)
+                y = random.randrange(pl)
+            plant_list[x], plant_list[y] = plant_list[y], plant_list[x]
         for p in plant_list:
             self.plants[p].update()
 
     def update_seeds(self):
         seeds_list = list(self.seeds)
+        pl = len(seeds_list)
+        if pl > 3:
+            for _ in range(cn.FIELDS_NUMBER_BY_SIDE): # неаонятно, есть ли эффект от перемешивания? Не заметно
+                x = random.randrange(pl)
+                y = random.randrange(pl)
+            seeds_list[x], seeds_list[y] = seeds_list[y], seeds_list[x]
         for seed in seeds_list:
             self.seeds[seed].update()
 
@@ -164,6 +175,7 @@ class World(Canvas):
 
 
     def update(self):
+        self.years = self.global_time // cn.MONTHS
         self.global_time += 1
         self.season_time +=1
         if self.season_time == cn.MONTHS:
@@ -172,9 +184,10 @@ class World(Canvas):
         self.update_seeds()
         self.update_plants()
         self.tag_raise('plant')
-        self.update_fields()
+        if cn.GRAPH_FIELD:
+            self.update_fields()
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_plants() # запись параметров всех растений в файлы
         if self.app.sim_state and self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
-            self.after(80, self.update)
+            self.after(cn.AFTER_COOLDOWN, self.update)
 

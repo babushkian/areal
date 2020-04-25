@@ -1,17 +1,14 @@
-from areal import world as wd
-from areal import plant
 from areal import constants as cn
 from areal.proto import Plant_proto
 
 class Rot(Plant_proto):
     # скорость гнеиния
     DECAY_SPEED = cn.PLANT_MAX_MASS / cn.MONTHS * cn.DECAY_MULTIPLIER
-    def __init__(self, field, sx ,sy, mass = cn.SEED_MASS + cn.PLANT_START_CONSUMED):
-        super().__init__(field, sx, sy, cn.GRAPHICS)
+    def __init__(self, field, app, sx ,sy, mass):
+        self.name = 'rot'
+        super().__init__(field, app, sx, sy)
         self.world = field.world
         self.field = field
-        self.name = 'rot'
-        self.create_img(**cn.DRAW_PARAMS[self.name])
         self.mass = mass
         self.state = 0
         self.world.rot[self.id] = self

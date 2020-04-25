@@ -1,8 +1,10 @@
 ﻿import random
 import math
 
-from areal import plant as pt
 from areal import constants as cn
+from areal.plant import Plant
+from areal.seed import Seed
+from areal.rot import Rot
 
 class Field:  # клетка поля
     # максимальное количество растений на клетку, чтобы симуляция не тормозила
@@ -14,10 +16,12 @@ class Field:  # клетка поля
     header = 'global time\tcoordinates\tplants\trot\tseeds\tbiomass\trot mass\tseeds mass\tsoil\ttotal mass\n'
     f_file.write(header)
 
-    def __init__(self, world, row, col, soil = cn.INIT_SOIL):
+    def __init__(self, world, app, row, col, soil = cn.INIT_SOIL):
         self.world = world
+        self.app = app
         self.row = row
         self.col = col
+        self.name = 'field'
         self.plant_num = 0
         self.starving = 0
         self.seed_num = 0
@@ -37,9 +41,12 @@ class Field:  # клетка поля
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
-        self.shape = self.world.create_rectangle(cd * row, cd * col,
+        print('Инициализация field ', self.app.CHECKS)
+        # if self.app.CHECKS[self.name][1].get():
+        if cn.GRAPH_DICT[self.name]:
+            self.shape = self.world.create_rectangle(cd * row, cd * col,
                                                   cd * row + cd, cd * col + cd,
-                                                  width=0, fill='#888888')
+                                                  width=0, fill='#888888', tags = self.name)
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
 
 
@@ -58,7 +65,8 @@ class Field:  # клетка поля
         '''
         присваивает цвет полю. цвет вычисляется в World
         '''
-        self.world.itemconfigure(self.shape, fill=color)
+        if cn.GRAPH_DICT[self.name]:
+            self.world.itemconfigure(self.shape, fill=color)
 
     def create_plant(self):
         """
@@ -74,9 +82,9 @@ class Field:  # клетка поля
         sx, sy = self.phys_to_screen(x, y)
 
         if len(self.plants) < self.MAX_PLANTS_IN_FIELD:
-            pt.Plant(self, sx, sy)
+            Plant(self, self.app,  sx, sy)
         else:
-            pt.Rot(self, sx, sy)
+            Rot(self, self.app, sx, sy, cn.TOTAL_SEED_MASS)
 
     def create_seed(self, seed_mass):
         # определяем координаты новорожденного растения
@@ -85,8 +93,7 @@ class Field:  # клетка поля
         y = self.rd_y + random.randrange(int(self.lu_y - self.rd_y))
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
-        pt.Seed(self, sx, sy, seed_mass)
-
+        Seed(self, self.app, sx, sy, seed_mass)
 
     def info(self):
         self.plant_num = len(self.plants)

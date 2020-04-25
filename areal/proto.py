@@ -1,20 +1,26 @@
+from abc import ABC
 from areal import constants as cn
-class Plant_proto:
-
-    def __init__(self, field, sx, sy, draw = True):
+from main import App
+print('При имторте в прототип', App.CHECKS)
+class Plant_proto(ABC):
+    def __init__(self, field, app, sx, sy):
         self.world = field.world
+        self.app = app
         self.field = field
-        self.name = None
         # координаты экранного пространства,  а не физические
         self.sx = sx
         self.sy = sy
-        self.draw = draw
         self.age = 0
-        #self.id = self.world.create_rectangle(self.sx - 3, self.sy - 3, self.sx + 3, self.sy + 3, fill=self.color)
+        # в наследуемом классе определяется параметр name, который служит ключом для словарей насроек
+        # и тегом для объектов на холсте
+        self.draw =  self.app.CHECKS[self.name][1].get()
+        self.create_img(**cn.DRAW_PARAMS[self.name])
+
 
     def create_img(self, size, color, border):
         if self.draw:
-            self.id = self.world.create_rectangle(self.sx - size, self.sy - size, self.sx + size, self.sy + size, fill=color, width=border, tags =self.name)
+            self.id = self.world.create_rectangle(self.sx - size, self.sy - size, self.sx + size, self.sy + size,
+                                                  fill=color, width=border, tags =self.name)
         else:
             self.id = cn.global_counter()
 

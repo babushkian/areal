@@ -1,7 +1,9 @@
-﻿
+﻿import random
 from tkinter import *
+from areal import constants as cn
 from areal import world
 
+# для эксперимента у всех констант будут единичные значения, а потом эти константы будут загружаться из конфига
 
 class App(Tk):
     LABELS_TEXT = ['цикл:{:5d}',
@@ -14,6 +16,11 @@ class App(Tk):
                    'масса гнили:{:5.1f}%',
                    'масса почвы:{:5.1f}%']
 
+    CHECKBOX_TEXT = {'plant': 'рисотвать растения    ',
+                  'seed': 'рисовать семена        ',
+                  'rot': 'рисовать гниль            ',
+                  'field': 'рисовать клетки поля'}
+    CHECKS = {}
     def __init__(self):
         super().__init__()
         self.sim_state = False
@@ -21,23 +28,39 @@ class App(Tk):
         self.labels = []
         self.interface_build()
         self.update()
+        self.restart()
 
     def interface_build(self):
         self.title("Ареал")
-        self.minsize(900, 760)
+        self.minsize(1000, 760)
         # нарезаем окно на зоны
         self.bottom_frame = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.bottom_frame.pack(side=BOTTOM, expand=YES, fill=X)
 
-        self.rightframe = Frame(self.bottom_frame, relief=GROOVE, borderwidth=2, padx=5, pady=5)
+        self.rightframe = Frame(self.bottom_frame, relief=GROOVE, borderwidth=2, padx=3, pady=3)
 
-        self.canvframe = Frame(self.bottom_frame, relief=GROOVE, borderwidth=2, padx=5, pady=5)
+        self.canvframe = Frame(self.bottom_frame, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
         self.rightframe.pack(side=RIGHT, expand=YES, fill=X)
 
         # в левой зоне рисуем канвас
         self.canv = world.World(self.canvframe, self)
         self.canv.pack()
+
+        # делаем чекбоксы
+        self.right_up_frame = Frame(self.rightframe, relief=GROOVE, borderwidth=2, padx=3, pady=3)
+        self.right_up_frame.pack(side=TOP, expand=YES, fill=X)
+        for ch in self.CHECKBOX_TEXT:
+            check_var = IntVar(value=cn.GRAPH_DICT[ch])
+            c = Checkbutton(self.right_up_frame, variable=check_var, text=self.CHECKBOX_TEXT[ch])
+            c.pack(side=TOP, expand=YES, fill=X)
+            self.CHECKS[ch] = (c, check_var)
+        for ch in self.CHECKS:
+            print(ch, self.CHECKS[ch][1], self.CHECKS[ch][0])
+            if self.CHECKS[ch][1].get() == 1:
+                self.CHECKS[ch][0].select()
+            else:
+                self.CHECKS[ch][0].deselect()
 
         # в правой зоне рисуем текстовое поле и кнопки
         self.resetbutton = Button(self.rightframe, text='СБРОС', command=self.restart)
@@ -58,6 +81,9 @@ class App(Tk):
             a.pack(side=TOP)
             self.labels.append(a)
 
+        print(self.CHECKS)
+        print(App.CHECKS)
+
     def update(self):
         if self.canv.newborn:
             self.statrtbutton.config(text='СТАРТ')
@@ -65,7 +91,7 @@ class App(Tk):
             self.statrtbutton.config(text='ПРОДОЛЖИТЬ')
         else:
             self.statrtbutton.config(text='ОСТАНОВИТЬ')
-        self.after(15, self.update)
+
         if self.canv.world_mass == 0:
             plant_percent = seed_percent = rot_percent = soil_percent = 0
         else:
@@ -85,25 +111,38 @@ class App(Tk):
                 soil_percent)
         for no, lab in enumerate(self.labels):
             lab.config(text=self.LABELS_TEXT[no].format(data[no]))
+        self.after(10, self.update)
 
+    def test_del_tag(self):
+        self.canv.delete('plant') # удяляет все объекты с выделенным тегом, функция ничего не возвращает
 
     def one_step(self):
         self.sim_state = False
+        self.disable_checkbutton()
         self.canv.run()
 
     def start_stop(self):
         if self.sim_state == False:
             self.sim_state = True
+            self.disable_checkbutton()
             self.canv.run()
         else:
             self.sim_state = False
 
+    def disable_checkbutton(self):
+        for x in self.CHECKS:
+            self.CHECKS[x][0].config(state = DISABLED)
+            #cn.GRAPH_DICT[x] = self.CHECKS[x][1].get()
+
+    def enable_checkbutton(self):
+        for x in self.CHECKS:
+            self.CHECKS[x][0].config(state = NORMAL)
+
 
     def restart(self):
+        random.seed(666)
         self.sim_state = False
-        for star in self.stars:
-            self.canv.delete(star)
-        self.stars = []
+        self.enable_checkbutton()
         self.canv.destroy()
         self.canv = world.World(self.canvframe, self)
         self.canv.pack()
@@ -115,4 +154,7 @@ class App(Tk):
 
 if __name__ == '__main__':
     win = App()
+    print('После инициализации класса App', App.CHECKS)
+    print('В экземпляре win класса App', win.CHECKS)
+    print('App.CHECKS == win.CHECKS', App.CHECKS == win.CHECKS)
     win.mainloop()

@@ -1,51 +1,10 @@
-﻿from areal import world as wd
-from areal import field as fd
+﻿
 from areal import constants as cn
 
 from areal.proto import Plant_proto
 from areal.rot import Rot
-
-
-
-
-class Seed(Plant_proto):
-    def __init__(self, field, sx, sy, seed_mass): # добавлю параметры позже
-        # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
-        # зависела от этого запаса. А сам запас определялся геномом растений
-        super().__init__(field, sx, sy, cn.GRAPHICS)
-        self.name = 'seed'
-        self.create_img(**cn.DRAW_PARAMS[self.name])
-        self.all_energy = seed_mass
-        self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
-        self.world.seeds[self.id] = self
-        self.field.seeds[self.id] = self
-
-
-    def update(self):
-        if self.age > cn.SEED_LIFE * cn.MONTHS:
-            self.become_soil()
-        else:
-            self.age += 1
-            if self.field.soil >= cn.SEED_GROW_UP_CONDITION and self.age >= self.grow_up_age:
-                self.grow_up()
-
-
-    def grow_up(self):
-        if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
-            Plant(self.field, self.sx, self.sy)
-        else:
-            Rot(self.field, self.sx, self.sy)
-        self.destroy_seed()
-
-    def become_soil(self):
-        Rot(self.field, self.sx, self.sy, self.all_energy)
-        self.destroy_seed()
-
-    def destroy_seed(self):
-        self.del_img()
-        del self.world.seeds[self.id]
-        del self.field.seeds[self.id]
-
+from main import App
+print('При имторте в plant', App.CHECKS)
 
 class Plant(Plant_proto):
     LIFETIME = int(cn.PLANT_LIFETIME_YEARS * cn.MONTHS)
@@ -62,12 +21,11 @@ class Plant(Plant_proto):
     p_file = open('plant_table.csv', 'w', encoding='UTF16')
     p_file.write(header)
 
-    def __init__(self,  field, sx, sy):
-        super().__init__(field, sx, sy, cn.GRAPHICS)
+    def __init__(self,  field, app, sx, sy):
         self.name = 'plant'
-        self.create_img(**cn.DRAW_PARAMS[self.name])
+        super().__init__(field, app, sx, sy)
         self.mass = cn.SEED_MASS
-        self.all_energy = cn.PLANT_START_CONSUMED + cn.SEED_MASS  # еда, потребленная за всю жизнь
+        self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.world.plants[self.id] = self
         self.field.plants[self.id] = self
 
@@ -107,16 +65,15 @@ class Plant(Plant_proto):
         Возвращает массу семечка
         :return: seed_mass
         """
-        full_seed_mass = cn.PLANT_START_CONSUMED + cn.SEED_MASS
-        self.mass -= full_seed_mass
-        self.all_energy -= full_seed_mass
-        return full_seed_mass
+        self.mass -= cn.TOTAL_SEED_MASS
+        self.all_energy -= cn.TOTAL_SEED_MASS
+        return cn.TOTAL_SEED_MASS
 
     def die(self, string=None):
         if string is not None:
             print("DIES of ", string)
         self.del_img()
-        Rot(self.field, self.sx, self.sy, self.all_energy)
+        Rot(self.field, self.app, self.sx, self.sy, self.all_energy)
         del self.world.plants[self.id]
         del self.field.plants[self.id]
 
