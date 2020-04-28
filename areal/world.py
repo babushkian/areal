@@ -15,6 +15,7 @@ class World(Canvas):
     def __init__(self, parent, app):
         super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
         self.app = app
+
         self.newborn = True
         # создаем пустое игровое поле
         temp = [None for _ in range(cn.FIELDS_NUMBER_BY_SIDE)]
@@ -39,14 +40,17 @@ class World(Canvas):
         self.rot = {}
 
         self.to_breed = []
+
+
         self.weather = weather.Weather()
-        self.create_fields()
 
 
     def run(self):
         if self.newborn:
+            self.create_fields()
             self.plant_setup_3()
             self.newborn = False
+            self.delay = cn.define_delay()
         self.update()
 
     def calculate_color(self, temp):
@@ -72,7 +76,7 @@ class World(Canvas):
     def create_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col] = fd.Field(self, self.app, row, col)
+                self.fields[row][col] = fd.Field(self, row, col)
 
     def create_plant(self, row, col):
         self.fields[row][col].create_plant()
@@ -189,5 +193,5 @@ class World(Canvas):
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_plants() # запись параметров всех растений в файлы
         if self.app.sim_state and self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
-            self.after(cn.AFTER_COOLDOWN, self.update)
+            self.after(self.delay, self.update)
 

@@ -27,6 +27,9 @@ class App(Tk):
         self.stars = []
         self.labels = []
         self.interface_build()
+        self.bind('<Escape>', self.restart)
+        self.bind('<space>', self.start_stop)
+        self.bind('<Right>', self.one_step)
         self.update()
         self.restart()
 
@@ -116,12 +119,12 @@ class App(Tk):
     def test_del_tag(self):
         self.canv.delete('plant') # удяляет все объекты с выделенным тегом, функция ничего не возвращает
 
-    def one_step(self):
+    def one_step(self, event=None):
         self.sim_state = False
         self.disable_checkbutton()
         self.canv.run()
 
-    def start_stop(self):
+    def start_stop(self, event=None):
         if self.sim_state == False:
             self.sim_state = True
             self.disable_checkbutton()
@@ -139,7 +142,7 @@ class App(Tk):
             self.CHECKS[x][0].config(state = NORMAL)
 
 
-    def restart(self):
+    def restart(self, event=None):
         random.seed(666)
         self.sim_state = False
         self.enable_checkbutton()
@@ -154,7 +157,4 @@ class App(Tk):
 
 if __name__ == '__main__':
     win = App()
-    print('После инициализации класса App', App.CHECKS)
-    print('В экземпляре win класса App', win.CHECKS)
-    print('App.CHECKS == win.CHECKS', App.CHECKS == win.CHECKS)
     win.mainloop()

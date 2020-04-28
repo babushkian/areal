@@ -21,9 +21,9 @@ class Plant(Plant_proto):
     p_file = open('plant_table.csv', 'w', encoding='UTF16')
     p_file.write(header)
 
-    def __init__(self,  field, app, sx, sy):
+    def __init__(self,  field, sx, sy):
         self.name = 'plant'
-        super().__init__(field, app, sx, sy)
+        super().__init__(field, sx, sy)
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.world.plants[self.id] = self
@@ -50,14 +50,19 @@ class Plant(Plant_proto):
 
 
     def update(self):
+        super().update()
         if self.age == self.LIFETIME:
             self.die()
         else:
             if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * cn.PLANT_MAX_MASS:
                 self.world.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
-            self.age += 1
-            self.world.itemconfigure(self.id, fill=self.color)
+            if self.draw:
+                self.plant_color_update()
+            self.info()
+
+    def plant_color_update(self):
+        self.world.itemconfig(self.gid, fill=self.color)
 
     def split_mass(self):
         """
@@ -73,37 +78,27 @@ class Plant(Plant_proto):
         if string is not None:
             print("DIES of ", string)
         self.del_img()
-        Rot(self.field, self.app, self.sx, self.sy, self.all_energy)
+        Rot(self.field, self.sx, self.sy, self.all_energy)
         del self.world.plants[self.id]
         del self.field.plants[self.id]
 
+
     def info(self):
-        p1 = str(self.world.global_time)
-        p2 = str(self.id)
-        plant_coords = '[%2d][%2d]' % (self.field.row, self.field.col)
-        p3 = str(self.age)
-        p4 = '%4.1f' % self.mass
-        p5 = '%5.1f' % self.all_energy
-        p6 = '%4.1f' % self.res_to_live
-        p7 = '%4.1f' % self.res_to_grow
-        p8 = '%4.1f' % self.res_ability
-        p9 = '%4.1f' % self.get
-        p10 = '%4.1f' % self.delta
-        soil = '%7.1f\n' % self.field.soil
-        plant_string = '\t'.join([p1, p2, plant_coords, p3, p4, p5, p6, p7, p8, p9, p10, soil]).replace('.', ',')
+        out_string = []
+        out_string.append(str(self.world.global_time))
+        out_string.append(str(self.id))
+        out_string.append(f'[{self.field.row:2d}][{self.field.col:2d}]')
+        out_string.append(str(self.age))
+        out_string.append(f'{self.mass:4.1f}')
+        out_string.append(f'{self.all_energy:5.1f}')
+        out_string.append(f'{self.res_to_live:4.1f}')
+        out_string.append(f'{self.res_to_grow:4.1f}')
+        out_string.append(f'{self.res_ability:4.1f}')
+        out_string.append(f'{self.get:4.1f}')
+        out_string.append(f'{self.delta:4.1f}')
+        out_string.append(f'{self.field.soil:7.1f}\n')
+        plant_string = '\t'.join(out_string).replace('.', ',')
         self.p_file.write(plant_string)
 
-    def string_info(self):
-        s = '----------\n'
-        s += 'ID = %d\t' %self.id
-        s += 'age = %d\t' % self.age
-        s += 'mass = %4.1f\t' % self.mass
-        s += 'consumed = %5.1f\n' % self.all_energy
-        s += 'to live = %4.1f\t' % self.res_to_live
-        s += 'to grow = %4.1f\t' % self.res_to_grow
-        s += 'abil = %4.1f\t' % self.res_ability
-        s += 'get = %4.1f\t' %self.get
-        s += 'mass up = %4.1f\n'% self.delta
-        return  s
 
 
