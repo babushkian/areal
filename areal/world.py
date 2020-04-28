@@ -1,17 +1,15 @@
 ﻿from tkinter import *
-import random
 import math
 
 from areal import constants as cn
 from areal import weather
-from areal import field as fd
 
 
 plants_info = open('plants_info.csv', 'w', encoding='UTF16')
 header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
 
 plants_info.write(header)
-
+from areal.field import Field
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
@@ -36,9 +34,6 @@ class World(Canvas):
         self.plant_mass = 0
         self.rot_mass = 0
         self.soil_mass = 0 # полная масса системы: почва растения, семена и гниль
-
-
-
 
         self.weather = weather.Weather()
 
@@ -74,7 +69,7 @@ class World(Canvas):
     def create_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col] = fd.Field(self, row, col)
+                self.fields[row][col] = Field(self, row, col)
 
     def create_plant(self, row, col):
         self.fields[row][col].create_plant()

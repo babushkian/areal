@@ -1,4 +1,4 @@
-from areal import field as fd
+from areal import field as fd # класс загружается только при таком импорте, не знаю почему
 from areal import constants as cn
 from areal.proto import Plant_proto
 from areal.plant import Plant

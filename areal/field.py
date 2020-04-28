@@ -1,5 +1,6 @@
 ﻿import random
 import math
+from collections import Counter
 
 from areal import constants as cn
 from areal.plant import Plant
@@ -22,10 +23,8 @@ class Field:  # клетка поля
         self.row = row
         self.col = col
         self.name = 'field'
-        self.plant_num = 0
         self.starving = 0
-        self.seed_num = 0
-        self.rot_num = 0
+        self.counts = Counter({'plant':0, 'seed':0, 'rot':0})
         self.plants = {} # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
         self.to_breed = [] # растения, готовые к размножению
         self.rot = {} # гниль на клетке
@@ -43,7 +42,6 @@ class Field:  # клетка поля
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
         if self.app.CHECKS[self.name][1].get():
-        #if cn.GRAPH_DICT[self.name]:
             self.shape = self.world.create_rectangle(cd * row, cd * col,
                                                   cd * row + cd, cd * col + cd,
                                                   width=0, fill='#888888', tags = self.name)
@@ -138,9 +136,6 @@ class Field:  # клетка поля
 
 
     def info(self):
-        self.plant_num = len(self.plants)
-        self.rot_num = len(self.rot)
-        self.seed_num = len(self.seeds)
         self.starving = 0
         self.plant_mass = 0
         for p in self.plants:
@@ -158,9 +153,9 @@ class Field:  # клетка поля
     def write_info(self):
         p1 = str(self.world.global_time)
         p2 = '[%2d][%2d]' % (self.row, self.col)
-        p3 = '%2d' % self.plant_num
-        p4 = '%2d' % self.rot_num
-        p4_1 = '%2d' % self.seed_num
+        p3 = '%2d' % self.counts['plant']
+        p4 = '%2d' % self.counts['rot']
+        p4_1 = '%2d' % self.counts['seed']
         p5 = '%6.1f' % self.plant_mass
         p6 = '%6.1f' % self.rot_mass
         p7 = '%6.1f' % self.seed_mass

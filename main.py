@@ -61,7 +61,6 @@ class App(Tk):
             c.pack(side=TOP, expand=YES, fill=X)
             self.CHECKS[ch] = (c, check_var)
         for ch in self.CHECKS:
-            print(ch, self.CHECKS[ch][1], self.CHECKS[ch][0])
             if self.CHECKS[ch][1].get() == 1:
                 self.CHECKS[ch][0].select()
             else:
@@ -85,9 +84,6 @@ class App(Tk):
             a = Label(self.labelframe, width=23, text=self.LABELS_TEXT[i].format(0), anchor=NW)
             a.pack(side=TOP)
             self.labels.append(a)
-
-        print(self.CHECKS)
-        print(App.CHECKS)
 
     def update(self):
         if self.canv.newborn:
