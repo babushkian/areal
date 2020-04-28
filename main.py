@@ -1,11 +1,13 @@
 ﻿import random
 from tkinter import *
+from areal.help import HelpButton
 from areal import constants as cn
 from areal import world
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
-# для эксперимента у всех констант будут единичные значения, а потом эти константы будут загружаться из конфига
+
+
 
 class App(Tk):
     LABELS_TEXT = ['цикл:{:5d}',
@@ -36,7 +38,7 @@ class App(Tk):
         self.restart()
 
     def interface_build(self):
-        self.title("Ареал")
+        self.title("Ареал 020")
         self.minsize(1000, 760)
         # нарезаем окно на зоны
         self.bottom_frame = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
@@ -47,14 +49,21 @@ class App(Tk):
         self.canvframe = Frame(self.bottom_frame, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
         self.rightframe.pack(side=RIGHT, expand=YES, fill=X)
+        HelpButton(self.rightframe)
+        Label(self.rightframe, text='Сид генератора случайных чисел').pack(side=TOP)
+        self.random_var = StringVar(value='1349')
+        self.entry = Entry(self.rightframe,  textvariable = self.random_var)
+        self.entry.pack(side=TOP, expand=YES, fill=X)
 
-        # в левой зоне рисуем канвас
+
         self.canv = world.World(self.canvframe, self)
         self.canv.pack()
 
         # делаем чекбоксы
         self.right_up_frame = Frame(self.rightframe, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.right_up_frame.pack(side=TOP, expand=YES, fill=X)
+
+
         for ch in self.CHECKBOX_TEXT:
             check_var = IntVar(value=cn.GRAPH_DICT[ch])
             c = Checkbutton(self.right_up_frame, variable=check_var, text=self.CHECKBOX_TEXT[ch])
@@ -81,7 +90,7 @@ class App(Tk):
         self.labelframe.pack(side=TOP, expand=YES, fill=X)
         # наполняем верхнюю зону надписями
         for i in range(len(self.LABELS_TEXT)):
-            a = Label(self.labelframe, width=23, text=self.LABELS_TEXT[i].format(0), anchor=NW)
+            a = Label(self.labelframe, width=23, text=self.LABELS_TEXT[i].format(0))
             a.pack(side=TOP)
             self.labels.append(a)
 
@@ -141,7 +150,7 @@ class App(Tk):
 
 
     def restart(self, event=None):
-        random.seed(666)
+        random.seed(self.random_var.get())
         self.sim_state = False
         self.enable_checkbutton()
         self.canv.destroy()

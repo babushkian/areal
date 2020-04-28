@@ -104,9 +104,11 @@ class World(Canvas):
     def update_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
+                self.fields[row][col].update()
                 #цвет клетки
-                back = self.soil_color(self.fields[row][col])
-                self.fields[row][col].set_color(back)
+                if cn.GRAPH_FIELD:
+                    back = self.soil_color(self.fields[row][col])
+                    self.fields[row][col].set_color(back)
 
     def statistics(self):
         self.soil_mass = 0
@@ -145,6 +147,7 @@ class World(Canvas):
 
 
     def update(self):
+        self.update_fields()
         self.years = self.global_time // cn.MONTHS
         self.global_time += 1
         self.season_time +=1
@@ -154,8 +157,8 @@ class World(Canvas):
         self.update_seeds()
         self.update_plants()
         self.tag_raise('plant')
-        if cn.GRAPH_FIELD:
-            self.update_fields()
+
+
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_plants() # запись параметров всех растений в файлы
         if self.app.sim_state and self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:

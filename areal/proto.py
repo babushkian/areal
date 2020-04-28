@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from areal import constants as cn
-from areal.label import CanvasTooltip
 
 
 
@@ -9,9 +8,7 @@ class Plant_proto(ABC):
         self.field = field
         self.world = field.world
         self.app = self.world.app
-        self.tooltip = None
         self.all_energy = 0
-
         # координаты экранного пространства,  а не физические
         self.sx = sx
         self.sy = sy
@@ -29,28 +26,15 @@ class Plant_proto(ABC):
         if self.draw:
             self.gid = self.world.create_rectangle(self.sx - size, self.sy - size, self.sx + size, self.sy + size,
                                                   fill=color, width=border, tags =self.name)
-            self.tooltip = CanvasTooltip(self.world, self.gid, text=self.create_tooltip_text())
 
-
-
-    def create_tooltip_text(self):
-        text = f'{self.name} # {self.gid}  age: {self.age} mass: {self.all_energy:4.1f}'
-        return text
-    # в момент, когда графическией элемент удаляется, а подсказка была активирована, подтсказка
-    # остается висеть навсегда, потому что не срабатывает обработчик выхода из поля объекта - его нет.
 
     @abstractmethod
     def update(self):
         self.age += 1
-        if self.draw:
-            self.tooltip.text=self.create_tooltip_text()
-
 
     def del_img(self):
         if self.draw:
             self.world.delete(self.gid)
-            self.tooltip.onLeave()
-            del self.tooltip
 
     def count_down(self):
         type(self).COUNT -= 1

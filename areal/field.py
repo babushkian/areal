@@ -1,6 +1,7 @@
 ﻿import random
 import math
 from collections import Counter
+from areal.label import CanvasTooltip
 
 from areal import constants as cn
 from areal.plant import Plant
@@ -23,6 +24,7 @@ class Field:  # клетка поля
         self.row = row
         self.col = col
         self.name = 'field'
+        self.tooltip = None
         self.starving = 0
         self.counts = Counter({'plant':0, 'seed':0, 'rot':0})
         self.plants = {} # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
@@ -41,10 +43,12 @@ class Field:  # клетка поля
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
-        if self.app.CHECKS[self.name][1].get():
+        self.draw =self.app.CHECKS[self.name][1].get()
+        if self.draw:
             self.shape = self.world.create_rectangle(cd * row, cd * col,
                                                   cd * row + cd, cd * col + cd,
                                                   width=0, fill='#888888', tags = self.name)
+            self.tooltip = CanvasTooltip(self.world, self.shape, text=self.create_tooltip_text())
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
 
 
@@ -163,6 +167,23 @@ class Field:  # клетка поля
         total_mass = '%7.1f\n' % (self.plant_mass + self.rot_mass + self.seed_mass + self.soil)
         field_string = '\t'.join([p1, p2, p3, p4, p4_1, p5, p6, p7, soil, total_mass]).replace('.', ',')
         self.f_file.write(field_string)
+
+
+    def create_tooltip_text(self):
+        text = f'Калетка: {self.row:02d}x{self.col:02d}\n'
+        text += f'Растений: {self.counts["plant"]:4d}({self.plant_mass:6.1f})\n'
+        text += f'Семян: {self.counts["seed"]:4d}({self.seed_mass:6.1f})\n'
+        text += f'Гнили: {self.counts["rot"]:4d}({self.rot_mass:6.1f})\n'
+        text += f'Масса почвы: {self.soil:6.1f}'
+        return text
+    # в момент, когда графическией элемент удаляется, а подсказка была активирована, подтсказка
+    # остается висеть навсегда, потому что не срабатывает обработчик выхода из поля объекта - его нет.
+
+
+    def update(self):
+        if self.draw:
+            self.tooltip.text=self.create_tooltip_text()
+
 
     @staticmethod
     def phys_to_screen(x, y):
