@@ -5,9 +5,8 @@ from areal.plant import Plant
 from areal.rot import Rot
 
 
-
-
 class Seed(Plant_proto):
+    COUNT = 0
     def __init__(self, field,  sx, sy, seed_mass): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
@@ -15,7 +14,6 @@ class Seed(Plant_proto):
         super().__init__(field, sx, sy)
         self.all_energy = seed_mass
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
-        self.world.seeds[self.id] = self
         self.field.seeds[self.id] = self
 
     def update(self):
@@ -42,6 +40,6 @@ class Seed(Plant_proto):
 
     def destroy_seed(self):
         self.del_img()
-        del self.world.seeds[self.id]
+        self.count_down()
         del self.field.seeds[self.id]
 

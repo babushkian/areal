@@ -3,10 +3,9 @@ from areal import constants as cn
 
 from areal.proto import Plant_proto
 from areal.rot import Rot
-from main import App
-print('При имторте в plant', App.CHECKS)
 
 class Plant(Plant_proto):
+    COUNT = 0
     LIFETIME = int(cn.PLANT_LIFETIME_YEARS * cn.MONTHS)
     BREED_TIME = int(cn.FRUITING_PERIOD * cn.MONTHS)
     TIME_COEF = 4 / cn.MONTHS  # коэффициент влияющий на скорость роста и питания
@@ -26,7 +25,6 @@ class Plant(Plant_proto):
         super().__init__(field, sx, sy)
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
-        self.world.plants[self.id] = self
         self.field.plants[self.id] = self
 
 
@@ -55,7 +53,7 @@ class Plant(Plant_proto):
             self.die()
         else:
             if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * cn.PLANT_MAX_MASS:
-                self.world.to_breed.append(self)  # встает в очередь на размножение
+                self.field.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
             if self.draw:
                 self.plant_color_update()
@@ -78,8 +76,8 @@ class Plant(Plant_proto):
         if string is not None:
             print("DIES of ", string)
         self.del_img()
+        self.count_down()
         Rot(self.field, self.sx, self.sy, self.all_energy)
-        del self.world.plants[self.id]
         del self.field.plants[self.id]
 
 

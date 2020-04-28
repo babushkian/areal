@@ -2,6 +2,7 @@ from areal import constants as cn
 from areal.proto import Plant_proto
 
 class Rot(Plant_proto):
+    COUNT = 0
     # скорость гнеиния
     DECAY_SPEED = cn.PLANT_MAX_MASS / cn.MONTHS * cn.DECAY_MULTIPLIER
     def __init__(self, field, sx ,sy, all_energy):
@@ -11,7 +12,6 @@ class Rot(Plant_proto):
         self.field = field
         self.all_energy = all_energy
         self.state = 0
-        self.world.rot[self.id] = self
         self.field.rot[self.id] = self
         # self.world.tag_lower(self.id)
         # self.world.tag_raise('rot')
@@ -35,7 +35,7 @@ class Rot(Plant_proto):
 
     def become_soil(self):
         self.del_img()
+        self.count_down()
         self.field.soil += self.all_energy  # растение превращается в почву
-        del self.world.rot[self.id]
         del self.field.rot[self.id]
 

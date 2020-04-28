@@ -15,7 +15,7 @@ class Plant_proto(ABC):
         self.sx = sx
         self.sy = sy
         self.age = 0
-
+        type(self).COUNT += 1
         # в наследуемом классе определяется параметр name, который служит ключом для словарей насроек
         # и тегом для объектов на холсте
         self.draw =  self.app.CHECKS[self.name][1].get()
@@ -49,3 +49,6 @@ class Plant_proto(ABC):
             self.world.delete(self.gid)
             self.tooltip.onLeave()
             del self.tooltip
+
+    def count_down(self):
+        type(self).COUNT -= 1

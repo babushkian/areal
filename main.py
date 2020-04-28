@@ -2,7 +2,9 @@
 from tkinter import *
 from areal import constants as cn
 from areal import world
-
+from areal.plant import Plant
+from areal.seed import Seed
+from areal.rot import Rot
 # для эксперимента у всех констант будут единичные значения, а потом эти константы будут загружаться из конфига
 
 class App(Tk):
@@ -104,10 +106,10 @@ class App(Tk):
             soil_percent = self.canv.soil_mass / self.canv.world_mass * 100
 
         data = (self.canv.global_time,
-                self.canv.plant_num,
+                Plant.COUNT,
                 self.canv.starving_percent,
-                self.canv.seed_num,
-                self.canv.rot_num,
+                Seed.COUNT,
+                Rot.COUNT,
                 plant_percent,
                 seed_percent,
                 rot_percent,

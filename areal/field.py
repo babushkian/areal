@@ -27,6 +27,7 @@ class Field:  # клетка поля
         self.seed_num = 0
         self.rot_num = 0
         self.plants = {} # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
+        self.to_breed = [] # растения, готовые к размножению
         self.rot = {} # гниль на клетке
         self.seeds = {} # семена на клетке
         self.seed_mass =0
@@ -93,6 +94,48 @@ class Field:  # клетка поля
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
         Seed(self, sx, sy, seed_mass)
+
+    def update_rot(self):
+        rot_list = list(self.rot)
+        for r in rot_list:
+            self.rot[r].update_continuous()
+
+    def update_seeds(self):
+        seeds_list = list(self.seeds)
+        sl = len(seeds_list)
+        if sl > 2:
+            x = random.randrange(sl)
+            y = random.randrange(sl)
+            seeds_list[x], seeds_list[y] = seeds_list[y], seeds_list[x]
+        for seed in seeds_list:
+            self.seeds[seed].update()
+
+
+    def update_plants(self):
+        if self.to_breed:
+            self.breed_plants()
+        plants_list = list(self.plants)
+        pl = len(plants_list)
+        if pl > 2:
+            x = random.randrange(pl)
+            y = random.randrange(pl)
+            plants_list[x], plants_list[y] = plants_list[y], plants_list[x]
+        for plant in plants_list:
+            self.plants[plant].update()
+
+    def breed_plants(self):
+        for p in self.to_breed:
+            # выбираем случайную клетку в окрестностях, чтобы засеять семя
+            l = len(p.field.area)
+            row, col = self.get_near_field_coords()
+            seed_mass = p.split_mass()
+            self.world.create_seed(row, col, seed_mass)
+        self.to_breed = []
+
+    def get_near_field_coords(self):
+        l = len(self.area)
+        return self.area[random.randrange(l)]
+
 
     def info(self):
         self.plant_num = len(self.plants)
