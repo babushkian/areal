@@ -20,7 +20,7 @@ class App(Tk):
         self.restart()
 
     def interface_build(self):
-        self.title("Ареал 020")
+        self.title("Ареал 021")
         self.minsize(1000, 760)
         self.canvframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
@@ -48,7 +48,7 @@ class App(Tk):
 
     def one_step(self, event=None):
         self.sim_state = False
-        self.disable_checkbutton()
+        self.chbox.disable_checkbutton()
         self.canv.run()
 
     def start_stop(self, event=None):

@@ -34,6 +34,7 @@ class Field:  # клетка поля
         self.seed_mass =0
         self.plant_mass = 0
         self.rot_mass = 0
+        self.plant_ration = 0 # сколько можно скормить каждому растению за ход
 
         self.soil = soil
         # физические координаты поля: его центра и краев
@@ -114,16 +115,13 @@ class Field:  # клетка поля
 
 
     def update_plants(self):
-        if self.to_breed:
-            self.breed_plants()
-        plants_list = list(self.plants)
-        pl = len(plants_list)
-        if pl > 2:
-            x = random.randrange(pl)
-            y = random.randrange(pl)
-            plants_list[x], plants_list[y] = plants_list[y], plants_list[x]
-        for plant in plants_list:
-            self.plants[plant].update()
+        if self.counts['plant'] > 0:
+            if self.to_breed:
+                self.breed_plants()
+            plants_list = list(self.plants)
+            self.plant_ration = self.soil/self.counts['plant']
+            for plant in plants_list:
+                self.plants[plant].update()
 
     def breed_plants(self):
         for p in self.to_breed:
@@ -170,7 +168,7 @@ class Field:  # клетка поля
 
 
     def create_tooltip_text(self):
-        text = f'Калетка: {self.row:02d}x{self.col:02d}\n'
+        text = f'Клетка: {self.row:02d}x{self.col:02d}\n'
         text += f'Растений: {self.counts["plant"]:4d}({self.plant_mass:6.1f})\n'
         text += f'Семян: {self.counts["seed"]:4d}({self.seed_mass:6.1f})\n'
         text += f'Гнили: {self.counts["rot"]:4d}({self.rot_mass:6.1f})\n'

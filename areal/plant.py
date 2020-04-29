@@ -37,7 +37,7 @@ class Plant(Plant_proto):
     def feed(self):
         res_to_live, res_to_grow, res_ability = self.count_needs()
         want =  min(res_to_live + res_to_grow, res_ability)
-        self.get = min(want, self.field.soil)
+        self.get = min(want, self.field.plant_ration)
         self.field.soil -= self.get
         self.all_energy += self.get
         self.delta = self.get - res_to_live  # растение может получать меньше, чем тратит на жизнь
