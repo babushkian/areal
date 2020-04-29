@@ -18,6 +18,7 @@ from areal.rot import Rot
 class World(Canvas):
     def __init__(self, parent, app):
         super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
+        self.pack()
         self.app = app
 
         self.newborn = True

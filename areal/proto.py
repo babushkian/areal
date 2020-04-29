@@ -17,7 +17,7 @@ class Plant_proto(ABC):
         self.field.counts[self.name] += 1 # счетчик сущностей на клетке
         # в наследуемом классе определяется параметр name, который служит ключом для словарей насроек
         # и тегом для объектов на холсте
-        self.draw =  self.app.CHECKS[self.name][1].get()
+        self.draw = self.app.is_draw(self)
         self.create_img(**cn.DRAW_PARAMS[self.name])
 
 

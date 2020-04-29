@@ -43,7 +43,7 @@ class Field:  # клетка поля
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
-        self.draw =self.app.CHECKS[self.name][1].get()
+        self.draw = self.app.is_draw(self)
         if self.draw:
             self.shape = self.world.create_rectangle(cd * row, cd * col,
                                                   cd * row + cd, cd * col + cd,
@@ -67,7 +67,7 @@ class Field:  # клетка поля
         '''
         присваивает цвет полю. цвет вычисляется в World
         '''
-        if self.app.CHECKS[self.name][1].get():
+        if self.app.is_draw(self):
             self.world.itemconfigure(self.shape, fill=color)
 
     def create_plant(self):
