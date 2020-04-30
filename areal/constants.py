@@ -1,5 +1,7 @@
 ﻿import math
 
+RANDOM_ON = True
+
 GRAPHICS = True # будет ли отображаться симуляция на экране
 
 GRAPH_PLANT = True
@@ -36,7 +38,7 @@ def define_delay():
                      * int(FIELDS_NUMBER_BY_SIDE * FIELDS_NUMBER_BY_SIDE /16)
     return AFTER_COOLDOWN
 
-SIMULATION_PERIOD = 1000  # количество лет, по истечении которых симуляция завершается
+SIMULATION_PERIOD = 40  # количество лет, по истечении которых симуляция завершается
 
 
 
@@ -87,7 +89,7 @@ DECAY_MULTIPLIER = 0.3 # скорость гниения, чем больше, �
 
 # СЕМЯ
 # условие проростания семечка. Сколько земли должно быть в клетке
-SEED_GROW_UP_CONDITION = 50
+SEED_GROW_UP_CONDITION = 480
 # сколько лет семечко может пролежать до всхода и не умереть
 SEED_LIFE = 5
 # время, в течении которого семечко не прорастает (в годах)
@@ -99,12 +101,22 @@ FRUITING_PERIOD = 0.25  # период между плодоношениями (
 
 
 # скрытая масса семечка, его внутренние резервы
-PLANT_START_CONSUMED = 5
+PLANT_HIDDEN_MASS = 5
 
 # масса семечка
 SEED_MASS = 1
-TOTAL_SEED_MASS = SEED_MASS + PLANT_START_CONSUMED
+TOTAL_SEED_MASS = SEED_MASS + PLANT_HIDDEN_MASS
 
 # максимальная масса растения
 PLANT_MAX_MASS = 30
 
+# логирование
+WRITE_FIELDS_INFO = False
+WRITE_PLANTS_INFO = False
+WRITE_WORLD_INFO = True
+plant_header = 'time\tID\tpmalnt coords\tage\tmass\ttotal food consumed\tfood to live\t food to grow\t food ability\tget food\tmass delta\tsoil in field\n'
+fiend_header = 'global time\tcoordinates\tplants\trot\tseeds\tbiomass\trot mass\tseeds mass\tsoil\ttotal mass\n'
+world_header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
+LOGGING = ((WRITE_PLANTS_INFO, 'every_plant_life', plant_header),
+           ( WRITE_PLANTS_INFO, 'fields_info', fiend_header),
+           (WRITE_WORLD_INFO, 'world_info', world_header))

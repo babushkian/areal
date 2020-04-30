@@ -1,8 +1,8 @@
 ﻿import random
 from tkinter import *
-from areal.help import HelpButton
 from areal import constants as cn
 from areal import world
+from areal.help import HelpButton
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
@@ -25,6 +25,7 @@ class App(Tk):
         self.canvframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
         self.canv = world.World(self.canvframe, self)
+
         self.rightframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.rightframe.pack(side=RIGHT, expand=YES, fill=BOTH)
         self.right_up_frame = Frame(self.rightframe, relief=GROOVE, borderwidth=2, padx=3, pady=3)
@@ -71,6 +72,7 @@ class App(Tk):
         return self.chbox.is_draw(obj)
 
     def quit(self):
+        self.canv.logging_close()
         self.destroy()
 
 

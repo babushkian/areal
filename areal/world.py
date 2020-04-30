@@ -1,16 +1,11 @@
 ﻿from tkinter import *
 from tkinter import font
-
 import math
+import random
 
 from areal import constants as cn
 from areal import weather
 
-
-plants_info = open('plants_info.csv', 'w', encoding='UTF16')
-header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
-
-plants_info.write(header)
 from areal.field import Field
 from areal.plant import Plant
 from areal.seed import Seed
@@ -43,7 +38,11 @@ class World(Canvas):
         self.soil_mass = 0 # полная масса системы: почва растения, семена и гниль
 
         self.weather = weather.Weather()
-
+        self.logfile_associations = {'every_plant_life': self.log_plants,
+                             'fields_info': self.log_fields,
+                             'world_info': self.log_world}
+        self.log_functions = {} # словарь содержит функции, которые должны вызываться для логирования ключевого файла
+        self.logging_prepare()
 
     def run(self):
         if self.newborn:
@@ -144,16 +143,6 @@ class World(Canvas):
 
     header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
 
-    def write_plants(self):
-        s = f'{self.years}\t{self.global_time}\t{Plant.COUNT}\t'
-        s += f'{Plant.COUNT - self.starving}\t{self.starving}\t'
-        s += f'{Seed.COUNT}\t'
-        s += f'{Rot.COUNT}\t'
-        s += f'{self.seed_mass:8.1f}\t{self.plant_mass:8.1f}\t{self.rot_mass:8.1f}\t'
-        s += f'{self.soil_mass:8.1f}\t{self.world_mass:8.1f}\n'
-        plants_info.write(s.replace('.', ','))
-
-
     def update_a(self):
         self.update_fields()
         self.years = self.global_time // cn.MONTHS
@@ -166,7 +155,7 @@ class World(Canvas):
         self.update_plants()
         self.tag_raise('plant')
         self.statistics() # изменить двойной цикл по клеткам на одинарный
-        self.write_plants() # запись параметров всех растений в файлы
+        self.write_logs()
         self.check_end_of_simulation()
         if not self.game_ower:
             if self.app.sim_state:
@@ -187,7 +176,57 @@ class World(Canvas):
         if cn.GRAPHICS:
             bigfont = font.Font(family='arial', size=20, weight="bold")
             if self.time_ower:
-                self.create_text(360, 360, text='СРОК СИМУЛЯЦИИ ОКОНЧЕН', font=bigfont, fill='blue')
+                self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
             if self.perish:
                 self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
+        self.logging_close()
 
+    def log_world(self, file):
+        s = f'{self.years}\t{self.global_time}\t{Plant.COUNT}\t'
+        s += f'{Plant.COUNT - self.starving}\t{self.starving}\t'
+        s += f'{Seed.COUNT}\t'
+        s += f'{Rot.COUNT}\t'
+        s += f'{self.seed_mass:8.1f}\t{self.plant_mass:8.1f}\t{self.rot_mass:8.1f}\t'
+        s += f'{self.soil_mass:8.1f}\t{self.world_mass:8.1f}\n'
+        file.write(s.replace('.', ','))
+
+    def log_fields(self, file):
+        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
+            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
+                file.write(self.fields[row][col].write_info())
+
+
+    def log_plants(self, file):
+        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
+            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
+                for plant in self.fields[row][col].plants.values():
+                    file.write(plant.info())
+
+
+    def file_suffix(self):
+        suffix = ['']
+        suffix.append(f'sgc{cn.SEED_GROW_UP_CONDITION}')
+        suffix.append(f'sl{cn.SEED_LIFE}')
+        suffix.append(f'spg{cn.SEED_PROHIBITED_GROW_UP}')
+        suffix.append(f'pl{cn.PLANT_LIFETIME_YEARS}')
+        suffix.append(f'sm{cn.SEED_MASS}')
+        suffix.append(f'pm{cn.PLANT_MAX_MASS}')
+        suffix.append(f'{random.randint(1, 100000):06d}')
+        s = '_'.join(suffix)
+        return s
+    def logging_prepare(self):
+        suffix = self.file_suffix()
+        for action, name, header  in cn.LOGGING:
+            if action:
+                f = open(f'{name}{suffix}.csv', 'w', encoding='UTF16')
+                f.write(header)
+                self.log_functions[f] = self.logfile_associations[name]
+
+    def write_logs(self):
+        for file in self.log_functions:
+            self.log_functions[file](file)
+
+    def logging_close(self):
+        for file in self.log_functions:
+            if not file.closed:
+                file.close()

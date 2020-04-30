@@ -16,9 +16,6 @@ class Plant(Plant_proto):
     GAMA = 0.5 * GROW_UP_PER_IIC
     EPSILON = 0.3
 
-    header = 'time\tID\tpmalnt coords\tage\tmass\ttotal food consumed\tfood to live\t food to grow\t food ability\tget food\tmass delta\tsoil in field\n'
-    p_file = open('plant_table.csv', 'w', encoding='UTF16')
-    p_file.write(header)
 
     def __init__(self,  field, sx, sy):
         self.name = 'plant'
@@ -96,7 +93,7 @@ class Plant(Plant_proto):
         out_string.append(f'{self.delta:4.1f}')
         out_string.append(f'{self.field.soil:7.1f}\n')
         plant_string = '\t'.join(out_string).replace('.', ',')
-        self.p_file.write(plant_string)
+        return plant_string
 
 
 

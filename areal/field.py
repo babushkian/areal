@@ -14,9 +14,6 @@ class Field:  # клетка поля
     # физическое расстояние от центра до края клетки  (половина клетки!!, т.к. PHYS_SIZE - половина игрового поля)
     FIELD_GRAPH_TO_PHYS_PROPORTION = cn.PHYS_SIZE / cn.FIELDS_NUMBER_BY_SIDE
 
-    f_file = open('field_info.csv', 'w', encoding='UTF16')
-    header = 'global time\tcoordinates\tplants\trot\tseeds\tbiomass\trot mass\tseeds mass\tsoil\ttotal mass\n'
-    f_file.write(header)
 
     def __init__(self, world, row, col, soil = cn.INIT_SOIL):
         self.world = world
@@ -84,7 +81,7 @@ class Field:  # клетка поля
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
 
-        if len(self.plants) < self.MAX_PLANTS_IN_FIELD:
+        if self.counts["plant"] < self.MAX_PLANTS_IN_FIELD:
             Plant(self, sx, sy)
         else:
             Rot(self, sx, sy, cn.TOTAL_SEED_MASS)
@@ -153,19 +150,19 @@ class Field:  # клетка поля
         self.write_info()
 
     def write_info(self):
-        p1 = str(self.world.global_time)
-        p2 = '[%2d][%2d]' % (self.row, self.col)
-        p3 = '%2d' % self.counts['plant']
-        p4 = '%2d' % self.counts['rot']
-        p4_1 = '%2d' % self.counts['seed']
-        p5 = '%6.1f' % self.plant_mass
-        p6 = '%6.1f' % self.rot_mass
-        p7 = '%6.1f' % self.seed_mass
-        soil = '%7.1f' % self.soil
-        total_mass = '%7.1f\n' % (self.plant_mass + self.rot_mass + self.seed_mass + self.soil)
-        field_string = '\t'.join([p1, p2, p3, p4, p4_1, p5, p6, p7, soil, total_mass]).replace('.', ',')
-        self.f_file.write(field_string)
-
+        s = []
+        s.append(f'{self.world.global_time}')
+        s.append(f'[{self.row:2d}][{self.col:2d}]')
+        s.append(f'{self.counts["plant"]:2d}')
+        s.append(f'{self.counts["rot"]:2d}')
+        s.append(f'{self.counts["seed"]:2d}')
+        s.append(f'{self.plant_mass:6.1f}')
+        s.append(f'{self.rot_mass:6.1f}')
+        s.append(f'{self.seed_mass:6.1f}')
+        s.append(f'{self.soil:6.1f}')
+        s.append(f'{(self.plant_mass + self.rot_mass + self.seed_mass + self.soil):7.1f}\n')
+        field_string = '\t'.join(s).replace('.', ',')
+        return field_string
 
     def create_tooltip_text(self):
         text = f'Клетка: {self.row:02d}x{self.col:02d}\n'
