@@ -43,7 +43,7 @@ class App(Tk):
     def update_a(self):
         self.buttons.update_a()
         self.labelframe.update_a()
-        self.after(10, self.update_a)
+        self.after(20, self.update_a)
 
 
     def one_step(self, event=None):
@@ -52,12 +52,13 @@ class App(Tk):
         self.canv.run()
 
     def start_stop(self, event=None):
-        if self.sim_state == False:
-            self.sim_state = True
-            self.chbox.disable_checkbutton()
-            self.canv.run()
-        else:
-            self.sim_state = False
+        if not self.canv.game_ower:
+            if self.sim_state == False:
+                self.sim_state = True
+                self.chbox.disable_checkbutton()
+                self.canv.run()
+            else:
+                self.sim_state = False
 
     def restart(self, event=None):
         random.seed(self.random_var.get())
@@ -123,7 +124,7 @@ class InfoLabels(Frame):
         super().__init__(root, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.pack(side=TOP, expand=YES, fill=X)
         for i in range(len(self.LABELS_TEXT)):
-            a = Label(self, width=23, text=self.LABELS_TEXT[i].format(0))
+            a = Label(self, width=23, text=self.LABELS_TEXT[i].format(0), anchor=NW)
             a.pack(side=TOP)
             self.labels.append(a)
 

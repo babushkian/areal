@@ -91,7 +91,7 @@ SEED_GROW_UP_CONDITION = 50
 # сколько лет семечко может пролежать до всхода и не умереть
 SEED_LIFE = 5
 # время, в течении которого семечко не прорастает (в годах)
-SEED_PROHIBITED_GROW_UP = 1
+SEED_PROHIBITED_GROW_UP = 0
 
 # РАСТЕНИЕ
 PLANT_LIFETIME_YEARS = 4 # время жизни в годах

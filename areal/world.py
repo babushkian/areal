@@ -1,4 +1,6 @@
 ﻿from tkinter import *
+from tkinter import font
+
 import math
 
 from areal import constants as cn
@@ -21,7 +23,11 @@ class World(Canvas):
         self.pack()
         self.app = app
 
-        self.newborn = True
+        self.newborn = True # смиуляция только создана и еще не запускалась
+        self.game_ower  = False # симуляция закончена по той или иной причине
+        self.time_ower = False # истек срок симуляции
+        self.perish = False # все вымерли
+        self.show_end = False # выводилась ли надпись об окончании игры
         # создаем пустое игровое поле
         temp = [None for _ in range(cn.FIELDS_NUMBER_BY_SIDE)]
         self.fields = [temp[:] for x in range(cn.FIELDS_NUMBER_BY_SIDE)]
@@ -45,7 +51,8 @@ class World(Canvas):
             self.plant_setup_3()
             self.newborn = False
             self.delay = cn.define_delay()
-        self.update()
+        if not self.game_ower:
+            self.update_a()
 
     def calculate_color(self, temp):
         t = (temp + 14)* 1.6
@@ -147,7 +154,7 @@ class World(Canvas):
         plants_info.write(s.replace('.', ','))
 
 
-    def update(self):
+    def update_a(self):
         self.update_fields()
         self.years = self.global_time // cn.MONTHS
         self.global_time += 1
@@ -158,10 +165,29 @@ class World(Canvas):
         self.update_seeds()
         self.update_plants()
         self.tag_raise('plant')
-
-
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_plants() # запись параметров всех растений в файлы
-        if self.app.sim_state and self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
-            self.after(self.delay, self.update)
+        self.check_end_of_simulation()
+        if not self.game_ower:
+            if self.app.sim_state:
+                self.after(self.delay, self.update_a)
+        else:
+            self.end_of_simulation()
+
+    def check_end_of_simulation(self):
+        if not self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
+            self.time_ower = True
+            self.game_ower = True
+        if Plant.COUNT + Seed.COUNT + Rot.COUNT < 1:
+            self.perish = True
+            self.game_ower = True
+
+    def end_of_simulation(self):
+        self.show_end = True
+        if cn.GRAPHICS:
+            bigfont = font.Font(family='arial', size=20, weight="bold")
+            if self.time_ower:
+                self.create_text(360, 360, text='СРОК СИМУЛЯЦИИ ОКОНЧЕН', font=bigfont, fill='blue')
+            if self.perish:
+                self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
 
