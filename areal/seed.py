@@ -18,7 +18,7 @@ class Seed(Plant_proto):
 
     def update(self):
         super().update()
-        if self.age == cn.SEED_LIFE * cn.MONTHS:
+        if self.age > cn.SEED_LIFE * cn.MONTHS:
             self.become_soil()
         else:
             self.age += 1
