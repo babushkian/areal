@@ -14,10 +14,11 @@ class App(Tk):
         self.canv = world.World(self, self)
         self.labelframe = InfoLabels(self, self)
         self.update_a()
-        self.canv.run()
+        self.canv.init_sim()
+        self.canv.update_a()
 
     def update_a(self):
-        if self.canv.game_ower:
+        if self.canv.game_over:
             self.destroy()
         else:
             self.labelframe.update_a()
@@ -30,6 +31,7 @@ class App(Tk):
         global EXIT
         if event:
             EXIT = True
+        del self.canv
         self.destroy()
 
 
@@ -38,7 +40,6 @@ if __name__ == '__main__':
     condit = [0, 30, 90, 180, 360, 720]
     for x in condit:
         cn.SEED_GROW_UP_CONDITION = x
-        print()
         win = App()
         win.mainloop()
         if EXIT:

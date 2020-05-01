@@ -31,8 +31,9 @@ class App(Tk):
         self.right_up_frame = Frame(self.rightframe, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.right_up_frame.pack(side=TOP, expand=YES, fill=X)
         HelpButton(self.right_up_frame)
-        Label(self.right_up_frame, text='Сид генератора случайных чисел').pack(side=TOP)
-        self.random_var = StringVar(value='1349')
+        self.rand_label = Label(self.right_up_frame, text='Сид генератора случайных чисел')
+        self.rand_label.pack(side=TOP)
+        self.random_var = StringVar(value=cn.RANDOM_SEED)
         self.entry = Entry(self.right_up_frame,  textvariable = self.random_var)
         self.entry.pack(side=TOP, expand=YES, fill=X)
 
@@ -47,26 +48,37 @@ class App(Tk):
         self.after(20, self.update_a)
 
 
+    def run(self):
+        if self.canv.newborn:
+            self.canv.init_sim()
+        self.canv.update_a()
+
     def one_step(self, event=None):
         self.sim_state = False
         self.chbox.disable_checkbutton()
-        self.canv.run()
+        self.run()
 
     def start_stop(self, event=None):
-        if not self.canv.game_ower:
+        if not self.canv.game_over:
             if self.sim_state == False:
                 self.sim_state = True
                 self.chbox.disable_checkbutton()
-                self.canv.run()
+                self.run()
             else:
                 self.sim_state = False
 
     def restart(self, event=None):
-        random.seed(self.random_var.get())
+        if cn.RANDOM_ON:
+            self.entry.config(state=DISABLED)
+            self.rand_label.config(text='Генератор истинно случайных чисел.')
+        else:
+            random.seed(self.random_var.get())
+
         self.sim_state = False
         self.chbox.enable_checkbutton()
-        self.canv.destroy()
-        self.canv = world.World(self.canvframe, self)
+        if not self.canv.newborn:
+            self.canv.destroy()
+            self.canv = world.World(self.canvframe, self)
 
     def is_draw(self, obj):
         return self.chbox.is_draw(obj)

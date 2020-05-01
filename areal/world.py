@@ -12,15 +12,15 @@ from areal.seed import Seed
 from areal.rot import Rot
 
 
+
 class World(Canvas):
     def __init__(self, parent, app):
         super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
         self.pack()
         self.app = app
-
         self.newborn = True # смиуляция только создана и еще не запускалась
-        self.game_ower  = False # симуляция закончена по той или иной причине
-        self.time_ower = False # истек срок симуляции
+        self.game_over  = False # симуляция закончена по той или иной причине
+        self.time_over = False # истек срок симуляции
         self.perish = False # все вымерли
         self.show_end = False # выводилась ли надпись об окончании игры
         # создаем пустое игровое поле
@@ -42,16 +42,56 @@ class World(Canvas):
                              'fields_info': self.log_fields,
                              'world_info': self.log_world}
         self.log_functions = {} # словарь содержит функции, которые должны вызываться для логирования ключевого файла
+
+
+    def init_sim(self):
+        Plant.COUNT = 0
+        Seed.COUNT = 0
+        Rot.COUNT = 0
+        self.create_fields()
+        self.plant_setup_3()
+        self.newborn = False
+        self.delay = cn.define_delay()
         self.logging_prepare()
 
-    def run(self):
-        if self.newborn:
-            self.create_fields()
-            self.plant_setup_3()
-            self.newborn = False
-            self.delay = cn.define_delay()
-        if not self.game_ower:
-            self.update_a()
+    def update_a(self):
+        self.update_fields()
+        self.years = self.global_time // cn.MONTHS
+        self.global_time += 1
+        self.season_time +=1
+        if self.season_time == cn.MONTHS:
+            self.season_time = 0
+        self.update_rot()
+        self.update_seeds()
+        self.update_plants()
+        self.tag_raise('plant')
+        self.statistics() # изменить двойной цикл по клеткам на одинарный
+        self.write_logs()
+        self.check_end_of_simulation()
+        if not self.game_over:
+            if self.app.sim_state:
+                self.after(self.delay, self.update_a)
+        else:
+            self.end_of_simulation()
+
+    def check_end_of_simulation(self):
+        if not self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
+            self.time_over = True
+            self.game_over = True
+        if Plant.COUNT + Seed.COUNT + Rot.COUNT < 1:
+            self.perish = True
+            self.game_over = True
+
+    def end_of_simulation(self):
+        self.show_end = True
+        if cn.GRAPHICS:
+            bigfont = font.Font(family='arial', size=20, weight="bold")
+            if self.time_over:
+                self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
+            if self.perish:
+                self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
+        self.logging_close()
+
 
     def calculate_color(self, temp):
         t = (temp + 14)* 1.6
@@ -141,45 +181,6 @@ class World(Canvas):
             self.starving_percent = self.starving / Plant.COUNT * 100
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
 
-    header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
-
-    def update_a(self):
-        self.update_fields()
-        self.years = self.global_time // cn.MONTHS
-        self.global_time += 1
-        self.season_time +=1
-        if self.season_time == cn.MONTHS:
-            self.season_time = 0
-        self.update_rot()
-        self.update_seeds()
-        self.update_plants()
-        self.tag_raise('plant')
-        self.statistics() # изменить двойной цикл по клеткам на одинарный
-        self.write_logs()
-        self.check_end_of_simulation()
-        if not self.game_ower:
-            if self.app.sim_state:
-                self.after(self.delay, self.update_a)
-        else:
-            self.end_of_simulation()
-
-    def check_end_of_simulation(self):
-        if not self.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
-            self.time_ower = True
-            self.game_ower = True
-        if Plant.COUNT + Seed.COUNT + Rot.COUNT < 1:
-            self.perish = True
-            self.game_ower = True
-
-    def end_of_simulation(self):
-        self.show_end = True
-        if cn.GRAPHICS:
-            bigfont = font.Font(family='arial', size=20, weight="bold")
-            if self.time_ower:
-                self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
-            if self.perish:
-                self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
-        self.logging_close()
 
     def log_world(self, file):
         s = f'{self.years}\t{self.global_time}\t{Plant.COUNT}\t'
@@ -195,13 +196,11 @@ class World(Canvas):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 file.write(self.fields[row][col].write_info())
 
-
     def log_plants(self, file):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 for plant in self.fields[row][col].plants.values():
                     file.write(plant.info())
-
 
     def file_suffix(self):
         suffix = ['']
@@ -214,6 +213,7 @@ class World(Canvas):
         suffix.append(f'{random.randint(1, 100000):06d}')
         s = '_'.join(suffix)
         return s
+
     def logging_prepare(self):
         suffix = self.file_suffix()
         for action, name, header  in cn.LOGGING:
