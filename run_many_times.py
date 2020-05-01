@@ -37,11 +37,22 @@ class App(Tk):
 
 if __name__ == '__main__':
 
-    condit = [0, 30, 90, 180, 360, 720]
+    condit = [0, 80, 160, 320, 410, 460]
+    progib = [0, .5, 1.3, 3, 4]
+    life = [1, 3, 5, 7]
+
     for x in condit:
         cn.SEED_GROW_UP_CONDITION = x
-        win = App()
-        win.mainloop()
+        for y in progib:
+            cn.SEED_PROHIBITED_GROW_UP = y
+            for z in life:
+                cn.SEED_LIFE = z
+                win = App()
+                win.mainloop()
+                if EXIT:
+                    break
+            if EXIT:
+                break
         if EXIT:
             break
 # В конце каждого прохода надо выводить строку с метриками симуляции:

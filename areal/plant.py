@@ -20,6 +20,7 @@ class Plant(Plant_proto):
     def __init__(self,  field, sx, sy):
         self.name = 'plant'
         super().__init__(field, sx, sy)
+        self.world.sign_plant_num += 1
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.field.plants[self.id] = self
@@ -74,6 +75,7 @@ class Plant(Plant_proto):
             print("DIES of ", string)
         self.del_img()
         self.count_down()
+        self.world.sign_plant_mass_energy += self.all_energy
         Rot(self.field, self.sx, self.sy, self.all_energy)
         del self.field.plants[self.id]
 

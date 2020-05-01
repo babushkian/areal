@@ -36,6 +36,11 @@ class World(Canvas):
         self.plant_mass = 0
         self.rot_mass = 0
         self.soil_mass = 0 # полная масса системы: почва растения, семена и гниль
+        self.sign_plant_num = 0
+        self.sign_plant_mass_energy = 0
+        self.sign_plant_mass_integral = 0
+        self.sign_seeds_born = 0
+        self.sign_seeds_grow_up = 0
 
         self.weather = weather.Weather()
         self.logfile_associations = {'every_plant_life': self.log_plants,
@@ -90,6 +95,7 @@ class World(Canvas):
                 self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
             if self.perish:
                 self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
+        print(self.population_metric())
         self.logging_close()
 
 
@@ -175,11 +181,13 @@ class World(Canvas):
                 self.plant_mass += field.plant_mass
                 self.rot_mass += field.rot_mass
                 self.starving += field.starving
+        self.sign_plant_mass_integral += self.plant_mass
         if self.starving == 0:
             self.starving_percent = 0
         else:
             self.starving_percent = self.starving / Plant.COUNT * 100
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
+
 
 
     def log_world(self, file):
@@ -230,3 +238,15 @@ class World(Canvas):
         for file in self.log_functions:
             if not file.closed:
                 file.close()
+
+    def population_metric(self):
+        s= '=====================================\n'
+        s+= f'SEED_GROW_UP_CONDITION: {cn.SEED_GROW_UP_CONDITION} '
+        s += f'SEED_PROHIBITED_GROW_UP: {cn.SEED_PROHIBITED_GROW_UP} '
+        s += f'SEED_LIFE: {cn.SEED_LIFE}\n'
+        s += f'Количество растений: {self.sign_plant_num}\n'
+        s += f'Количество семян: {self.sign_seeds_born}\n'
+        s += f'Процент проросших семян: {(self.sign_seeds_grow_up /self.sign_seeds_born *100):5.2f}\n'
+        s += f'Суммарная скрытая масса растений: {self.sign_plant_mass_energy:10.0f}\n'
+        s += f'Сумма массы растений за весь период: {self.sign_plant_mass_integral:10.0f}\n'
+        return s
