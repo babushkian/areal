@@ -98,7 +98,7 @@ class Field:  # клетка поля
     def update_rot(self):
         rot_list = list(self.rot)
         for r in rot_list:
-            self.rot[r].update_continuous()
+            self.rot[r].update()
 
     def update_seeds(self):
         seeds_list = list(self.seeds)

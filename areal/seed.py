@@ -20,7 +20,7 @@ class Seed(Plant_proto):
     def update(self):
         super().update()
         if self.age > cn.SEED_LIFE * cn.MONTHS:
-            self.become_soil()
+            self.become_rot()
         else:
             self.age += 1
             if self.field.soil >= cn.SEED_GROW_UP_CONDITION and self.age >= self.grow_up_age:
@@ -32,9 +32,9 @@ class Seed(Plant_proto):
             Plant(self.field,  self.sx, self.sy)
             self.destroy_seed()
         else:
-            self.become_soil()
+            self.become_rot()
 
-    def become_soil(self):
+    def become_rot(self):
         Rot(self.field, self.sx, self.sy, self.all_energy)
         self.destroy_seed()
 

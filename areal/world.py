@@ -41,6 +41,7 @@ class World(Canvas):
         self.sign_plant_mass_integral = 0
         self.sign_seeds_born = 0
         self.sign_seeds_grow_up = 0
+        self.soil_flow = 0# МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции
 
         self.weather = weather.Weather()
         self.logfile_associations = {'every_plant_life': self.log_plants,
@@ -95,7 +96,10 @@ class World(Canvas):
                 self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
             if self.perish:
                 self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
-        print(self.population_metric())
+        metr = f'metric_{self.file_suffix()}.csv'
+        with open(metr, 'w', encoding='UTF16') as f:
+            f.write(self.population_metric_head())
+            f.write(self.population_metric_record())
         self.logging_close()
 
 
@@ -188,8 +192,6 @@ class World(Canvas):
             self.starving_percent = self.starving / Plant.COUNT * 100
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
 
-
-
     def log_world(self, file):
         s = f'{self.years}\t{self.global_time}\t{Plant.COUNT}\t'
         s += f'{Plant.COUNT - self.starving}\t{self.starving}\t'
@@ -210,21 +212,25 @@ class World(Canvas):
                 for plant in self.fields[row][col].plants.values():
                     file.write(plant.info())
 
-    def file_suffix(self):
-        suffix = ['']
+    @staticmethod
+    def file_suffix():
+        suffix = list('')
         suffix.append(f'sgc{cn.SEED_GROW_UP_CONDITION}')
         suffix.append(f'sl{cn.SEED_LIFE}')
         suffix.append(f'spg{cn.SEED_PROHIBITED_GROW_UP}')
         suffix.append(f'pl{cn.PLANT_LIFETIME_YEARS}')
         suffix.append(f'sm{cn.SEED_MASS}')
         suffix.append(f'pm{cn.PLANT_MAX_MASS}')
+        suffix.append(f'is{cn.INIT_SOIL}')
+        suffix.append(f'fi{cn.FIELDS_NUMBER_BY_SIDE}')
+
         suffix.append(f'{random.randint(1, 100000):06d}')
         s = '_'.join(suffix)
         return s
 
     def logging_prepare(self):
         suffix = self.file_suffix()
-        for action, name, header  in cn.LOGGING:
+        for action, name, header in cn.LOGGING:
             if action:
                 f = open(f'{name}{suffix}.csv', 'w', encoding='UTF16')
                 f.write(header)
@@ -239,14 +245,41 @@ class World(Canvas):
             if not file.closed:
                 file.close()
 
-    def population_metric(self):
-        s= '=====================================\n'
-        s+= f'SEED_GROW_UP_CONDITION: {cn.SEED_GROW_UP_CONDITION} '
-        s += f'SEED_PROHIBITED_GROW_UP: {cn.SEED_PROHIBITED_GROW_UP} '
-        s += f'SEED_LIFE: {cn.SEED_LIFE}\n'
-        s += f'Количество растений: {self.sign_plant_num}\n'
-        s += f'Количество семян: {self.sign_seeds_born}\n'
-        s += f'Процент проросших семян: {(self.sign_seeds_grow_up /self.sign_seeds_born *100):5.2f}\n'
-        s += f'Суммарная скрытая масса растений: {self.sign_plant_mass_energy:10.0f}\n'
-        s += f'Сумма массы растений за весь период: {self.sign_plant_mass_integral:10.0f}\n'
+    @staticmethod
+    def population_metric_head():
+        s = 'dimension\t'
+        s += 'end date\t'
+        s += 'soil on tile\t'
+        s += 'grow up condition\t'
+        s += 'prohibited grow up period\t'
+        s += 'seed life\t'
+        s += 'seed mass\t'
+        s += 'plant life\t'
+        s += 'plant mass\t'
+        s += 'plants number\t'
+        s += 'seeds number\t'
+        s += 'grow up seeds percent\t'
+        s += 'total plant enetgy\t'
+        s += 'total soil flow\n'
         return s
+
+    def population_metric_record(self):
+        s = list()
+        s.append(str(cn.FIELDS_NUMBER_BY_SIDE))
+        s.append(str(self.global_time))
+        s.append(str(cn.INIT_SOIL))
+        s.append(str(cn.SEED_GROW_UP_CONDITION))
+        s.append(str(cn.SEED_PROHIBITED_GROW_UP))
+        s.append(str(cn.SEED_LIFE))
+        s.append(str(cn.SEED_MASS))
+        s.append(str(cn.PLANT_LIFETIME_YEARS))
+        s.append(str(cn.PLANT_MAX_MASS))
+        s.append(str(self.sign_plant_num))
+        s.append(str(self.sign_seeds_born))
+        s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100):4.1f}')
+        s.append(f'{self.sign_plant_mass_energy:10.0f}')
+        s.append(f'{self.soil_flow:10.0f}')
+
+        string = '\t'.join(s)
+        string=string.replace('.', ',')
+        return string
