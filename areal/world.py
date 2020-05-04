@@ -2,7 +2,7 @@
 from tkinter import font
 import math
 import random
-
+import os
 from areal import constants as cn
 from areal import weather
 
@@ -96,10 +96,8 @@ class World(Canvas):
                 self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
             if self.perish:
                 self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
-        metr = f'metric_{self.file_suffix()}.csv'
-        with open(metr, 'w', encoding='UTF16') as f:
-            f.write(self.population_metric_head())
-            f.write(self.population_metric_record())
+        self.population_metric_record(self.app.metr_file)
+        self.app.metr_file.flush()
         self.logging_close()
 
 
@@ -214,7 +212,7 @@ class World(Canvas):
 
     @staticmethod
     def file_suffix():
-        suffix = list('')
+        suffix = list()
         suffix.append(f'sgc{cn.SEED_GROW_UP_CONDITION}')
         suffix.append(f'sl{cn.SEED_LIFE}')
         suffix.append(f'spg{cn.SEED_PROHIBITED_GROW_UP}')
@@ -232,7 +230,8 @@ class World(Canvas):
         suffix = self.file_suffix()
         for action, name, header in cn.LOGGING:
             if action:
-                f = open(f'{name}{suffix}.csv', 'w', encoding='UTF16')
+                fname = os.path.join(self.app.sim_dir, f'{name}_{suffix}.csv')
+                f = open(fname, 'w', encoding='UTF16')
                 f.write(header)
                 self.log_functions[f] = self.logfile_associations[name]
 
@@ -246,7 +245,7 @@ class World(Canvas):
                 file.close()
 
     @staticmethod
-    def population_metric_head():
+    def population_metric_head(file):
         s = 'dimension\t'
         s += 'end date\t'
         s += 'soil on tile\t'
@@ -261,9 +260,9 @@ class World(Canvas):
         s += 'grow up seeds percent\t'
         s += 'total plant enetgy\t'
         s += 'total soil flow\n'
-        return s
+        file.write(s)
 
-    def population_metric_record(self):
+    def population_metric_record(self, file):
         s = list()
         s.append(str(cn.FIELDS_NUMBER_BY_SIDE))
         s.append(str(self.global_time))
@@ -278,8 +277,8 @@ class World(Canvas):
         s.append(str(self.sign_seeds_born))
         s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100):4.1f}')
         s.append(f'{self.sign_plant_mass_energy:10.0f}')
-        s.append(f'{self.soil_flow:10.0f}')
+        s.append(f'{self.soil_flow:10.0f}\n')
 
         string = '\t'.join(s)
         string=string.replace('.', ',')
-        return string
+        file.write(string)

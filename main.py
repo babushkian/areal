@@ -1,4 +1,6 @@
-﻿import random
+﻿import os
+import random
+import time
 from tkinter import *
 from areal import constants as cn
 from areal import world
@@ -11,8 +13,13 @@ from areal.rot import Rot
 class App(Tk):
     def __init__(self):
         super().__init__()
+        self.series = True  # единичная симуляция, а не серия
         self.sim_state = False
+        self.sim_directory()
+        metr = os.path.join(self.sim_dir, 'metric_.csv')
+        self.metr_file = open(metr, 'w', encoding='UTF16')
         self.interface_build()
+        self.canv.population_metric_head(self.metr_file)
         self.bind('<Escape>', self.restart)
         self.bind('<space>', self.start_stop)
         self.bind('<Right>', self.one_step)
@@ -20,7 +27,7 @@ class App(Tk):
         self.restart()
 
     def interface_build(self):
-        self.title("Ареал 021")
+        self.title("Ареал 022")
         self.minsize(1000, 760)
         self.canvframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
@@ -41,6 +48,10 @@ class App(Tk):
         self.labelframe = InfoLabels(self.rightframe, self)
         self.buttons = Buttons(self.rightframe, self)
 
+    def sim_directory(self):
+        cur_date = time.time()
+        self.sim_dir = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))
+        os.mkdir(self.sim_dir)
 
     def update_a(self):
         self.buttons.update_a()
