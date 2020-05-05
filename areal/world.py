@@ -213,16 +213,14 @@ class World(Canvas):
     @staticmethod
     def file_suffix():
         suffix = list()
-        suffix.append(f'sgc{cn.SEED_GROW_UP_CONDITION}')
-        suffix.append(f'sl{cn.SEED_LIFE}')
-        suffix.append(f'spg{cn.SEED_PROHIBITED_GROW_UP}')
-        suffix.append(f'pl{cn.PLANT_LIFETIME_YEARS}')
-        suffix.append(f'sm{cn.SEED_MASS}')
-        suffix.append(f'pm{cn.PLANT_MAX_MASS}')
-        suffix.append(f'is{cn.INIT_SOIL}')
-        suffix.append(f'fi{cn.FIELDS_NUMBER_BY_SIDE}')
-
-        suffix.append(f'{random.randint(1, 100000):06d}')
+        suffix.append(f'sgc{cn.SEED_GROW_UP_CONDITION:03}')
+        suffix.append(f'sl{cn.SEED_LIFE:03}')
+        suffix.append(f'spg{cn.SEED_PROHIBITED_GROW_UP:03}')
+        suffix.append(f'pl{cn.PLANT_LIFETIME_YEARS:03}')
+        suffix.append(f'sm{cn.SEED_MASS:03}')
+        suffix.append(f'pm{cn.PLANT_MAX_MASS:03}')
+        suffix.append(f'is{cn.INIT_SOIL:03}')
+        suffix.append(f'fi{cn.FIELDS_NUMBER_BY_SIDE:03}')
         s = '_'.join(suffix)
         return s
 

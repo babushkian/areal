@@ -16,7 +16,7 @@ class App(Tk):
         self.series = True  # единичная симуляция, а не серия
         self.sim_state = False
         self.sim_directory()
-        metr = os.path.join(self.sim_dir, 'metric_.csv')
+        metr = os.path.join(self.sim_dir, 'metric.csv')
         self.metr_file = open(metr, 'w', encoding='UTF16')
         self.interface_build()
         self.canv.population_metric_head(self.metr_file)
