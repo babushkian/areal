@@ -53,12 +53,7 @@ class Plant(Plant_proto):
             if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * cn.PLANT_MAX_MASS:
                 self.field.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
-            if self.draw:
-                self.plant_color_update()
             self.info()
-
-    def plant_color_update(self):
-        self.world.itemconfig(self.gid, fill=self.color)
 
     def split_mass(self):
         """
@@ -73,7 +68,6 @@ class Plant(Plant_proto):
     def die(self, string=None):
         if string is not None:
             print("DIES of ", string)
-        self.del_img()
         self.count_down()
         self.world.sign_plant_mass_energy += self.all_energy
         Rot(self.field, self.sx, self.sy, self.all_energy)

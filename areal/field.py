@@ -1,7 +1,6 @@
 ﻿import random
 import math
 from collections import Counter
-from areal.label import CanvasTooltip
 
 from areal import constants as cn
 from areal.plant import Plant
@@ -17,11 +16,9 @@ class Field:  # клетка поля
 
     def __init__(self, world, row, col, soil = cn.INIT_SOIL):
         self.world = world
-        self.app = world.app
         self.row = row
         self.col = col
         self.name = 'field'
-        self.tooltip = None
         self.starving = 0
         self.counts = Counter({'plant':0, 'seed':0, 'rot':0})
         self.plants = {} # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
@@ -41,12 +38,6 @@ class Field:  # клетка поля
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
-        self.draw = self.app.is_draw(self)
-        if self.draw:
-            self.shape = self.world.create_rectangle(cd * row, cd * col,
-                                                  cd * row + cd, cd * col + cd,
-                                                  width=0, fill='#888888', tags = self.name)
-            self.tooltip = CanvasTooltip(self.world, self.shape, text=self.create_tooltip_text())
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
 
 
@@ -60,13 +51,6 @@ class Field:  # клетка поля
                     area.append((r, c))
         return area
 
-
-    def set_color(self, color=None):
-        '''
-        присваивает цвет полю. цвет вычисляется в World
-        '''
-        if self.app.is_draw(self):
-            self.world.itemconfigure(self.shape, fill=color)
 
     def create_plant(self):
         """
@@ -173,11 +157,6 @@ class Field:  # клетка поля
         return text
     # в момент, когда графическией элемент удаляется, а подсказка была активирована, подтсказка
     # остается висеть навсегда, потому что не срабатывает обработчик выхода из поля объекта - его нет.
-
-
-    def update(self):
-        if self.draw:
-            self.tooltip.text=self.create_tooltip_text()
 
 
     @staticmethod

@@ -13,8 +13,7 @@ class Rot(Plant_proto):
         self.all_energy = all_energy
         self.state = 0
         self.field.rot[self.id] = self
-        # self.world.tag_lower(self.id)
-        # self.world.tag_raise('rot')
+
 
     # гниль медленно превращается в землю - на каждом ходу образуется немного земли
     def update(self):
@@ -28,7 +27,6 @@ class Rot(Plant_proto):
 
 
     def become_soil(self):
-        self.del_img()
         self.count_down()
         self.field.soil += self.all_energy  # растение превращается в почву
         del self.field.rot[self.id]

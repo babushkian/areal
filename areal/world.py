@@ -1,4 +1,4 @@
-﻿from tkinter import *
+﻿
 from tkinter import font
 import math
 import random
@@ -13,16 +13,14 @@ from areal.rot import Rot
 
 
 
-class World(Canvas):
-    def __init__(self, parent, app):
-        super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
-        self.pack()
-        self.app = app
+class World:
+    def __init__(self, sim_dir, metr_file):
+        self.sim_dir = sim_dir
+        self.metr_file = metr_file
         self.newborn = True # смиуляция только создана и еще не запускалась
         self.game_over  = False # симуляция закончена по той или иной причине
         self.time_over = False # истек срок симуляции
         self.perish = False # все вымерли
-        self.show_end = False # выводилась ли надпись об окончании игры
         # создаем пустое игровое поле
         temp = [None for _ in range(cn.FIELDS_NUMBER_BY_SIDE)]
         self.fields = [temp[:] for x in range(cn.FIELDS_NUMBER_BY_SIDE)]
@@ -61,7 +59,6 @@ class World(Canvas):
         self.logging_prepare()
 
     def update_a(self):
-        self.update_fields()
         self.years = self.global_time // cn.MONTHS
         self.global_time += 1
         self.season_time +=1
@@ -70,14 +67,10 @@ class World(Canvas):
         self.update_rot()
         self.update_seeds()
         self.update_plants()
-        self.tag_raise('plant')
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_logs()
         self.check_end_of_simulation()
-        if not self.game_over:
-            if self.app.sim_state:
-                self.after(self.delay, self.update_a)
-        else:
+        if self.game_over:
             self.end_of_simulation()
 
     def check_end_of_simulation(self):
@@ -89,15 +82,8 @@ class World(Canvas):
             self.game_over = True
 
     def end_of_simulation(self):
-        self.show_end = True
-        if cn.GRAPHICS:
-            bigfont = font.Font(family='arial', size=20, weight="bold")
-            if self.time_over:
-                self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
-            if self.perish:
-                self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
-        self.population_metric_record(self.app.metr_file)
-        self.app.metr_file.flush()
+        self.population_metric_record(self.metr_file)
+        self.metr_file.flush()
         self.logging_close()
 
 
@@ -149,21 +135,6 @@ class World(Canvas):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 self.fields[row][col].update_rot()
 
-
-    def soil_color(self, field):
-        t = int(7*math.log2(field.soil+1))
-        color = 'gray%d' % t
-        return color
-
-
-    def update_fields(self):
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col].update()
-                #цвет клетки
-                if cn.GRAPH_FIELD:
-                    back = self.soil_color(self.fields[row][col])
-                    self.fields[row][col].set_color(back)
 
     def statistics(self):
         self.soil_mass = 0
@@ -228,7 +199,7 @@ class World(Canvas):
         suffix = self.file_suffix()
         for action, name, header in cn.LOGGING:
             if action:
-                fname = os.path.join(self.app.sim_dir, f'{name}_{suffix}.csv')
+                fname = os.path.join(self.sim_dir, f'{name}_{suffix}.csv')
                 f = open(fname, 'w', encoding='UTF16')
                 f.write(header)
                 self.log_functions[f] = self.logfile_associations[name]
