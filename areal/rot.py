@@ -21,7 +21,8 @@ class Rot(Plant_proto):
         decrement = min(self.all_energy, self.DECAY_SPEED)
         self.all_energy -= decrement
         self.field.soil += decrement
-        self.world.soil_flow += decrement
+        if self.world.living_beings > 0:
+            self.world.soil_flow += decrement
         if self.all_energy == 0:
             self.become_soil()
 

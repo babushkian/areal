@@ -14,7 +14,7 @@ class Field:  # клетка поля
     FIELD_GRAPH_TO_PHYS_PROPORTION = cn.PHYS_SIZE / cn.FIELDS_NUMBER_BY_SIDE
 
 
-    def __init__(self, world, row, col, soil = cn.INIT_SOIL):
+    def __init__(self, world, row, col, soil):
         self.world = world
         self.row = row
         self.col = col
@@ -29,7 +29,6 @@ class Field:  # клетка поля
         self.plant_mass = 0
         self.rot_mass = 0
         self.plant_ration = 0 # сколько можно скормить каждому растению за ход
-
         self.soil = soil
         # физические координаты поля: его центра и краев
         self.center_x, self.center_y = self.graph_to_phys(row, col)

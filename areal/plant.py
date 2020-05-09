@@ -10,10 +10,10 @@ class Plant(Plant_proto):
     BREED_TIME = int(cn.FRUITING_PERIOD * cn.MONTHS)
     TIME_COEF = 4 / cn.MONTHS  # коэффициент влияющий на скорость роста и питания
     # чем больше скважность, тем более мелкими порциями растение питается
-    GROW_UP_PER_IIC = 15 / cn.MONTHS
-    ALPHA = 0.1 * GROW_UP_PER_IIC
-    BETA = 0.3 * GROW_UP_PER_IIC
-    GAMA = 0.5 * GROW_UP_PER_IIC
+    GROW_UP_PER_TIC = 15 / cn.MONTHS
+    ALPHA = 0.1 * GROW_UP_PER_TIC
+    BETA = 0.3 * GROW_UP_PER_TIC
+    GAMA = 0.5 * GROW_UP_PER_TIC
     EPSILON = 0.3
 
 
@@ -39,7 +39,6 @@ class Plant(Plant_proto):
         self.field.soil -= self.get
         self.all_energy += self.get
         self.delta = self.get - res_to_live  # растение может получать меньше, чем тратит на жизнь
-        self.color = cn.SICK_PLANT_COLOR if self.delta < 0 else cn.FRESH_PLANT_COLOR
         self.mass += self.delta
         if self.mass < 0.5:  # как только масса понижается до минимума, растение гибнет от голода
             self.die()
@@ -65,9 +64,7 @@ class Plant(Plant_proto):
         self.all_energy -= cn.TOTAL_SEED_MASS
         return cn.TOTAL_SEED_MASS
 
-    def die(self, string=None):
-        if string is not None:
-            print("DIES of ", string)
+    def die(self):
         self.count_down()
         self.world.sign_plant_mass_energy += self.all_energy
         Rot(self.field, self.sx, self.sy, self.all_energy)

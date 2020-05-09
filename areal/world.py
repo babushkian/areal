@@ -1,7 +1,4 @@
 ﻿
-from tkinter import font
-import math
-import random
 import os
 from areal import constants as cn
 from areal import weather
@@ -39,7 +36,9 @@ class World:
         self.sign_plant_mass_integral = 0
         self.sign_seeds_born = 0
         self.sign_seeds_grow_up = 0
-        self.soil_flow = 0# МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции
+        # МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции (пока есть живые сущности)
+        self.soil_flow = 0
+        self.living_beings = 0
 
         self.weather = weather.Weather()
         self.logfile_associations = {'every_plant_life': self.log_plants,
@@ -64,6 +63,7 @@ class World:
         self.season_time +=1
         if self.season_time == cn.MONTHS:
             self.season_time = 0
+        self.living_beings = Plant.COUNT + Seed.COUNT # проверяем, есть кто живой на карте
         self.update_rot()
         self.update_seeds()
         self.update_plants()
@@ -110,7 +110,7 @@ class World:
     def create_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col] = Field(self, row, col)
+                self.fields[row][col] = Field(self, row, col, cn.INIT_SOIL)
 
     def create_plant(self, row, col):
         self.fields[row][col].create_plant()
