@@ -1,9 +1,11 @@
 import sqlite3
+import os
 
 class WorldBase:
 
-    def __init__(self):
-        self.conn = sqlite3.connect('world.db')
+    def __init__(self, dir):
+        base = os.path.join(dir, 'world.db')
+        self.conn = sqlite3.connect(base)
         self.c = self.conn.cursor()
 
         self.c.execute('DROP TABLE IF EXISTS parameters')
@@ -19,14 +21,14 @@ class WorldBase:
             sim_period INTEGER NOT NULL, 
             max_plants_on_field INTEGER NOT NULL, 
             init_soil INTEGER,
-            grow_up_condition INTEGER, 
-            seed_life INTEGER NOT NULL, 
+            grow_up_condition REAL, 
+            seed_life REAL NOT NULL, 
             seed_prohibit_period REAL, 
-            plant_life INTEGER NOT NULL, 
+            plant_life REAL NOT NULL, 
             fruiting_period REAL NOT NULL, 
-            hidden_mass INTEGER, 
-            seed_mass INTEGER NOT NULL, 
-            max_plant_mass INTEGER NOT NULL)""")
+            hidden_mass REAL, 
+            seed_mass REAL NOT NULL, 
+            max_plant_mass REAL NOT NULL)""")
 
         self.c.execute('CREATE TABLE IF NOT EXISTS time (tick INTEGER PRIMARY KEY)')
 
