@@ -45,7 +45,7 @@ class World:
                              'fields_info': self.log_fields,
                              'world_info': self.log_world}
         self.log_functions = {} # словарь содержит функции, которые должны вызываться для логирования ключевого файла
-        self.db = base.WorldBase()
+        self.db = base.WorldBase(self.sim_dir)
 
     def init_sim(self):
         def param_tuple():
