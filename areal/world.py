@@ -7,7 +7,7 @@ from areal.field import Field
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
-
+from areal import base
 
 
 class World:
@@ -45,9 +45,24 @@ class World:
                              'fields_info': self.log_fields,
                              'world_info': self.log_world}
         self.log_functions = {} # словарь содержит функции, которые должны вызываться для логирования ключевого файла
-
+        self.db = base.WorldBase()
 
     def init_sim(self):
+        def param_tuple():
+            t = [cn.FIELDS_NUMBER_BY_SIDE]
+            t.append(cn.SIMULATION_PERIOD)
+            t.append(cn.MAX_PLANTS_IN_FIELD)
+            t.append(cn.INIT_SOIL)
+            t.append(cn.SEED_GROW_UP_CONDITION)
+            t.append(cn.SEED_LIFE)
+            t.append(cn.SEED_PROHIBITED_GROW_UP)
+            t.append(cn.PLANT_LIFETIME_YEARS)
+            t.append(cn.FRUITING_PERIOD)
+            t.append(cn.PLANT_HIDDEN_MASS)
+            t.append(cn.SEED_MASS)
+            t.append(cn.PLANT_MAX_MASS)
+            return tuple(t)
+
         Plant.COUNT = 0
         Seed.COUNT = 0
         Rot.COUNT = 0
@@ -56,6 +71,7 @@ class World:
         self.newborn = False
         self.delay = cn.define_delay()
         self.logging_prepare()
+        self.db.insert_params(param_tuple())
 
     def update_a(self):
         self.years = self.global_time // cn.MONTHS
@@ -70,6 +86,9 @@ class World:
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.write_logs()
         self.check_end_of_simulation()
+        self.db.insert_time(self.global_time)
+        if self.global_time% (3*cn.MONTHS) == 0:
+            self.db.commit()
         if self.game_over:
             self.end_of_simulation()
 
@@ -85,6 +104,7 @@ class World:
         self.population_metric_record(self.metr_file)
         self.metr_file.flush()
         self.logging_close()
+        self.db.close_coonection()
 
 
     def calculate_color(self, temp):
@@ -111,6 +131,7 @@ class World:
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 self.fields[row][col] = Field(self, row, col, cn.INIT_SOIL)
+                self.db.insert_field( self.fields[row][col].id, row, col,)
 
     def create_plant(self, row, col):
         self.fields[row][col].create_plant()
@@ -148,6 +169,7 @@ class World:
                 # подсчет масс растений семян, гнили и почвы на каждой клетке
                 field = self.fields[row][col]
                 field.info()
+                self.db.update_soil(field.id,self.global_time, field.soil)
                 # подсчет полной массы почвы на на игровом поле
                 self.soil_mass += field.soil
                 self.seed_mass += field.seed_mass

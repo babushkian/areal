@@ -18,6 +18,7 @@ class Field:  # клетка поля
         self.world = world
         self.row = row
         self.col = col
+        self.id = f'{self.row:02d}x{self.col:02d}'
         self.name = 'field'
         self.starving = 0
         self.counts = Counter({'plant':0, 'seed':0, 'rot':0})
@@ -36,7 +37,6 @@ class Field:  # клетка поля
         self.lu_y = self.center_y + self.FIELD_GRAPH_TO_PHYS_PROPORTION
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
-        cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
 
 

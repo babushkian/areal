@@ -11,7 +11,6 @@ for roll in range(25):
     condit = [0, 15, 30, 45, 60, 80, 110, 140]
     progib = [0, 0.5, 1.5, 3]
     life = [1, 3, 5, 8, 12]
-
     cur_date = time.time()
     sim_dir = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))
     os.mkdir(sim_dir)
