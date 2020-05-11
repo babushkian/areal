@@ -27,7 +27,7 @@ for roll in range(25):
                     cn.SEED_LIFE = z
                     count +=1
                     print(f' ROLL: {roll}\tNUM: {count:4}\tsoil: {v:4}\tcondition: \t{x:4} prohibit: {y:4}\tlife: {z:4}')
-                    w = world.World(sim_dir , metr_file)
+                    w = world.World(sim_dir, metr_file, count)
                     if os.path.getsize(metr_file.name) == 0:
                         w.population_metric_head(metr_file)
                     w.init_sim()

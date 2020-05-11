@@ -23,7 +23,7 @@ class Plant(Plant_proto):
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.field.plants[self.id] = self
-        self.world.db.insert_plant(self.id, self.field.id)
+        self.world.db.insert_plant(self)
 
 
     def count_needs(self):
@@ -53,7 +53,7 @@ class Plant(Plant_proto):
                 self.field.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
             self.info()
-            self.world.db.update_plant_mass(self.id, self.world.global_time, self.mass, self.all_energy)
+            self.world.db.update_plant_mass(self)
 
     def split_mass(self):
         """

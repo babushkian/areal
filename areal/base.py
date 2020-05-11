@@ -3,20 +3,21 @@ import os
 
 class WorldBase:
 
-    def __init__(self, dir):
+    def __init__(self, world, dir):
+        self.world = world
         base = os.path.join(dir, 'world.db')
         self.conn = sqlite3.connect(base)
         self.c = self.conn.cursor()
-
+        '''
         self.c.execute('DROP TABLE IF EXISTS parameters')
         self.c.execute('DROP TABLE IF EXISTS time')
         self.c.execute('DROP TABLE IF EXISTS fields')
         self.c.execute('DROP TABLE IF EXISTS soil')
         self.c.execute('DROP TABLE IF EXISTS plants')
         self.c.execute('DROP TABLE IF EXISTS plant_mass')
-
-
+        '''
         self.c.execute("""CREATE TABLE IF NOT EXISTS parameters (
+            sim_id INTEGER PRIMARY KEY, 
             dimension INTEGER NOT NULL,
             sim_period INTEGER NOT NULL, 
             max_plants_on_field INTEGER NOT NULL, 
@@ -30,27 +31,31 @@ class WorldBase:
             seed_mass REAL NOT NULL, 
             max_plant_mass REAL NOT NULL)""")
 
-        self.c.execute('CREATE TABLE IF NOT EXISTS time (tick INTEGER PRIMARY KEY)')
+        self.c.execute("""CREATE TABLE IF NOT EXISTS time (
+            tick_id INTEGER PRIMARY KEY, 
+            tick INTEGER, 
+            sim_id INTEGER NOT NULL)""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS fields (
             field_id TEXT PRIMARY KEY,
-            x INTEGER NOT NULL, 
-            y INTEGER NOT NULL)""")
+            row INTEGER NOT NULL, 
+            col INTEGER NOT NULL)""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS plants (
             plant_id INTEGER PRIMARY KEY,
-            field_id TEXT NOT NULL)""")
+            field_id TEXT NOT NULL, 
+            sim_id INTEGER NOT NULL)""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS soil (
             id INTEGER PRIMARY KEY,
             field_id TEXT NOT NULL,
-            tick INTEGER NOT NULL,
+            tick_id INTEGER NOT NULL,
             soil REAL)""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS plant_mass (
             id INTEGER PRIMARY KEY,
             plant_id INTEGER NOT NULL,
-            tick INTEGER NOT NULL,
+            tick_id INTEGER NOT NULL,
             mass REAL, 
             all_energy REAL)""")
 
@@ -63,7 +68,8 @@ class WorldBase:
 
 
     def insert_params(self, params):
-        self.c.execute("""INSERT INTO parameters (dimension, 
+        self.c.execute("""INSERT INTO parameters (sim_id,
+                                            dimension, 
                                             sim_period, 
                                             max_plants_on_field, 
                                             init_soil, 
@@ -75,42 +81,28 @@ class WorldBase:
                                             hidden_mass, 
                                             seed_mass, 
                                             max_plant_mass) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (params))
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (params))
 
 
-    def insert_time(self,time):
-        self.c.execute('INSERT INTO time (tick) VALUES (?)', (time,))
+    def insert_time(self):
+        self.tick_id = self.world.global_time + 1_000_000 * self.world.sim_number
+        self.c.execute('INSERT INTO time (tick_id, tick, sim_id) VALUES (?, ?, ?)',
+                       (self.tick_id, self.world.global_time, self.world.sim_number))
 
-    def insert_field(self, f, x, y):
-        self.c.execute('INSERT INTO fields (field_id, x, y) VALUES (?, ?, ?)', (f, x, y))
+    def insert_field(self, field):
+        self.c.execute('INSERT OR REPLACE INTO fields (field_id, row, col) VALUES (?, ?, ?)', (field.id, field.row, field.col))
 
-    def insert_plant(self, id, field_id):
-        self.c.execute('INSERT INTO plants (plant_id, field_id) VALUES (?, ?)', (id, field_id))
+    def insert_plant(self, plant):
+        self.c.execute('INSERT INTO plants (plant_id, field_id, sim_id) VALUES (?, ?, ?)',
+                       (plant.id, plant.field.id, self.world.sim_number))
 
-    def update_soil(self, field_id, time, soil):
-        self.c.execute('INSERT INTO  soil (field_id, tick, soil) VALUES (?, ?, ?)', (field_id, time, soil))
+    def update_soil(self, field):
+        self.c.execute('INSERT INTO  soil (field_id, tick_id, soil) VALUES (?, ?, ?)', (field.id, self.tick_id, field.soil))
 
-    def update_plant_mass(self, plant_id, time, mass, all_energy):
-        self.c.execute("""INSERT INTO  plant_mass (plant_id, tick, mass, all_energy) VALUES (?, ?, ?, ?)""",
-                       (plant_id, time, mass, all_energy))
+    def update_plant_mass(self, plant):
+        self.c.execute("""INSERT INTO  plant_mass (plant_id, tick_id, mass, all_energy) VALUES (?, ?, ?, ?)""",
+                       (plant.id, self.tick_id, plant.mass, plant.all_energy))
 
 
     def commit(self):
         self.conn.commit()
-"""
-fff = load_family_names()
-for fm in fff:
-	c.execute('INSERT INTO family (fem, male) VALUES(?, ?)', (fm))
-
-fff = load_fem_names()
-for fm in fff:
-	c.execute('INSERT INTO fem_names (first_name) VALUES("{}")'.format(fm))
-
-fff = load_male_names()
-for fm in fff:
-	c.execute('INSERT INTO male_names (first_name, second_name_fem, second_name_male) VALUES(?, ?, ?)', (fm))
-
-conn.commit()
-c.close()
-conn.close()
-"""
