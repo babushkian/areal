@@ -10,10 +10,10 @@ os.mkdir(sim_dir)
 metr = os.path.join(sim_dir, 'metric.csv')
 metr_file = open(metr, 'w', encoding='UTF16')
 del metr
-cn.INIT_SOIL = 220
+cn.INIT_SOIL = 200
 cn.SEED_GROW_UP_CONDITION = 45
 cn.SEED_PROHIBITED_GROW_UP = 0.5
-cn.SEED_LIFE = 8
+cn.SEED_LIFE = 4
 w = world.World(sim_dir , metr_file)
 w.population_metric_head(metr_file)
 w.init_sim()

@@ -5,9 +5,10 @@ conn = sqlite3.connect('world.db')
 c = conn.cursor()
 
 t1 = time.time()
-c.execute('CREATE INDEX IF NOT EXISTS soil_tick_idx  ON soil (tick_id)')
+
 c.execute('CREATE INDEX IF NOT EXISTS plant_mass_idx  ON plant_mass (plant_id)')
 c.execute('CREATE INDEX IF NOT EXISTS plant_tick_idx  ON plant_mass (tick_id)')
+c.execute('CREATE INDEX IF NOT EXISTS soil_tick_idx  ON soil (tick_id)')
 t2 = time.time()
 c.execute('''SELECT tick_id
 		FROM time
@@ -18,7 +19,7 @@ x = c.fetchall()
 
 t3 = time.time()
 for i in x:
-	print(i)
+	#print(i)
 	c.execute('''SELECT  field_id, soil
 		FROM soil
 		WHERE tick_id = (?)
@@ -30,7 +31,7 @@ for i in x:
 			ON plant_mass.plant_id = plants.plant_id
 			WHERE tick_id = (?)''', i)
 	plants = c.fetchall()
-	print(plants)
+	#print(plants)
 
 t4 = time.time()
 

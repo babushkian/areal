@@ -48,10 +48,33 @@ class WorldBase:
         self.c.execute("""CREATE TABLE IF NOT EXISTS plants (
             plant_id INTEGER PRIMARY KEY,
             field_id TEXT NOT NULL, 
-            sim_id INTEGER NOT NULL,
+            birth INTEGER, 
+            death INTEGER DEFAULT NULL,
             FOREIGN KEY (field_id) REFERENCES fields (field_id),
-            FOREIGN KEY (sim_id) REFERENCES parameters (sim_id)
+            FOREIGN KEY (birth) REFERENCES time (tick_id)
+            FOREIGN KEY (death) REFERENCES time (tick_id)
             )""")
+
+        self.c.execute("""CREATE TABLE IF NOT EXISTS seeds (
+            seed_id INTEGER PRIMARY KEY,
+            field_id TEXT NOT NULL, 
+            birth INTEGER, 
+            death INTEGER DEFAULT NULL,
+            FOREIGN KEY (field_id) REFERENCES fields (field_id),
+            FOREIGN KEY (birth) REFERENCES time (tick_id)
+            FOREIGN KEY (death) REFERENCES time (tick_id)
+            )""")
+
+        self.c.execute("""CREATE TABLE IF NOT EXISTS rot (
+            rot_id INTEGER PRIMARY KEY,
+            field_id TEXT NOT NULL, 
+            birth INTEGER, 
+            death INTEGER DEFAULT NULL,
+            FOREIGN KEY (field_id) REFERENCES fields (field_id),
+            FOREIGN KEY (birth) REFERENCES time (tick_id)
+            FOREIGN KEY (death) REFERENCES time (tick_id)
+            )""")
+
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS soil (
             id INTEGER PRIMARY KEY,
@@ -72,9 +95,18 @@ class WorldBase:
             FOREIGN KEY (tick_id) REFERENCES time (tick_id) 
             )""")
 
+        self.c.execute("""CREATE TABLE IF NOT EXISTS rot_mass (
+            id INTEGER PRIMARY KEY,
+            rot_id INTEGER NOT NULL,
+            tick_id INTEGER NOT NULL,
+            mass REAL,  
+            FOREIGN KEY (rot_id) REFERENCES rot (rot_id),
+            FOREIGN KEY (tick_id) REFERENCES time (tick_id) 
+            )""")
+
         self.conn.commit()
 
-    def close_coonection(self):
+    def close_connection(self):
         self.conn.commit()
         self.c.close()
         self.conn.close()
@@ -106,15 +138,38 @@ class WorldBase:
         self.c.execute('INSERT OR REPLACE INTO fields (field_id, row, col) VALUES (?, ?, ?)', (field.id, field.row, field.col))
 
     def insert_plant(self, plant):
-        self.c.execute('INSERT INTO plants (plant_id, field_id, sim_id) VALUES (?, ?, ?)',
-                       (plant.id, plant.field.id, self.world.sim_number))
-
-    def update_soil(self, field):
-        self.c.execute('INSERT INTO  soil (field_id, tick_id, soil) VALUES (?, ?, ?)', (field.id, self.tick_id, field.soil))
+        self.c.execute('INSERT INTO plants (plant_id, field_id, birth) VALUES (?, ?, ?)',
+                       (plant.id, plant.field.id, self.tick_id))
 
     def update_plant_mass(self, plant):
         self.c.execute("""INSERT INTO  plant_mass (plant_id, tick_id, mass, all_energy) VALUES (?, ?, ?, ?)""",
                        (plant.id, self.tick_id, plant.mass, plant.all_energy))
+
+    def plant_death(self, plant):
+        self.c.execute('UPDATE plants SET death = (?) WHERE plant_id = (?)', (self.tick_id, plant.id))
+
+
+    def insert_seed(self, seed):
+        self.c.execute('INSERT INTO seeds (seed_id, field_id, birth) VALUES (?, ?, ?)', (seed.id, seed.field.id, self.tick_id))
+
+    def seed_death(self, seed):
+        self.c.execute('UPDATE seeds SET death = (?) WHERE seed_id = (?)', (self.tick_id, seed.id))
+
+
+    def insert_rot(self, rot):
+        self.c.execute('INSERT INTO rot (rot_id, field_id, birth) VALUES (?, ?, ?)',
+                       (rot.id, rot.field.id, self.tick_id))
+
+    def update_rot_mass(self, rot):
+        self.c.execute("""INSERT INTO  rot_mass (rot_id, tick_id, mass) VALUES (?, ?, ?)""",
+                       (rot.id, self.tick_id, rot.all_energy))
+
+    def rot_to_soil(self, rot):
+        self.c.execute('UPDATE rot SET death = (?) WHERE rot_id = (?)', (self.tick_id, rot.id))
+
+
+    def update_soil(self, field):
+        self.c.execute('INSERT INTO  soil (field_id, tick_id, soil) VALUES (?, ?, ?)', (field.id, self.tick_id, field.soil))
 
 
     def commit(self):

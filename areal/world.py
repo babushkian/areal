@@ -109,7 +109,7 @@ class World:
         self.population_metric_record(self.metr_file)
         self.metr_file.flush()
         self.logging_close()
-        self.db.close_coonection()
+        self.db.close_connection()
 
 
     def calculate_color(self, temp):
