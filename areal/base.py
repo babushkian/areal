@@ -16,6 +16,8 @@ class WorldBase:
         self.c.execute('DROP TABLE IF EXISTS plants')
         self.c.execute('DROP TABLE IF EXISTS plant_mass')
         '''
+        self.c.execute('PRAGMA foreign_keys=on')
+
         self.c.execute("""CREATE TABLE IF NOT EXISTS parameters (
             sim_id INTEGER PRIMARY KEY, 
             dimension INTEGER NOT NULL,
@@ -34,7 +36,9 @@ class WorldBase:
         self.c.execute("""CREATE TABLE IF NOT EXISTS time (
             tick_id INTEGER PRIMARY KEY, 
             tick INTEGER, 
-            sim_id INTEGER NOT NULL)""")
+            sim_id INTEGER NOT NULL,
+            FOREIGN KEY (sim_id) REFERENCES parameters (sim_id)
+            )""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS fields (
             field_id TEXT PRIMARY KEY,
@@ -44,20 +48,29 @@ class WorldBase:
         self.c.execute("""CREATE TABLE IF NOT EXISTS plants (
             plant_id INTEGER PRIMARY KEY,
             field_id TEXT NOT NULL, 
-            sim_id INTEGER NOT NULL)""")
+            sim_id INTEGER NOT NULL,
+            FOREIGN KEY (field_id) REFERENCES fields (field_id),
+            FOREIGN KEY (sim_id) REFERENCES parameters (sim_id)
+            )""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS soil (
             id INTEGER PRIMARY KEY,
             field_id TEXT NOT NULL,
             tick_id INTEGER NOT NULL,
-            soil REAL)""")
+            soil REAL, 
+            FOREIGN KEY (field_id) REFERENCES fields (field_id),
+            FOREIGN KEY (tick_id) REFERENCES time (tick_id)
+            )""")
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS plant_mass (
             id INTEGER PRIMARY KEY,
             plant_id INTEGER NOT NULL,
             tick_id INTEGER NOT NULL,
             mass REAL, 
-            all_energy REAL)""")
+            all_energy REAL, 
+            FOREIGN KEY (plant_id) REFERENCES plants (plant_id),
+            FOREIGN KEY (tick_id) REFERENCES time (tick_id) 
+            )""")
 
         self.conn.commit()
 
