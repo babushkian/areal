@@ -1,7 +1,7 @@
 ﻿import random
 import math
 from collections import Counter
-from areal.label import CanvasTooltip
+
 
 from areal import constants as cn
 from areal.plant import Plant
@@ -17,7 +17,6 @@ class Field:  # клетка поля
 
     def __init__(self, world, row, col, soil = cn.INIT_SOIL):
         self.world = world
-        self.app = world.app
         self.row = row
         self.col = col
         self.name = 'field'
@@ -32,7 +31,7 @@ class Field:  # клетка поля
         self.plant_mass = 0
         self.rot_mass = 0
         self.plant_ration = 0 # сколько можно скормить каждому растению за ход
-
+        self.change_field_objects = {'new': [], 'obsolete': []}
         self.soil = soil
         # физические координаты поля: его центра и краев
         self.center_x, self.center_y = self.graph_to_phys(row, col)
@@ -40,13 +39,6 @@ class Field:  # клетка поля
         self.lu_y = self.center_y + self.FIELD_GRAPH_TO_PHYS_PROPORTION
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
-        cd = cn.FIELD_SIZE_PIXELS # размер клетки в пикселях. Присваивание сделано для сокращения записи
-        self.draw = self.app.is_draw(self)
-        if self.draw:
-            self.shape = self.world.create_rectangle(cd * row, cd * col,
-                                                  cd * row + cd, cd * col + cd,
-                                                  width=0, fill='#888888', tags = self.name)
-            self.tooltip = CanvasTooltip(self.world, self.shape, text=self.create_tooltip_text())
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
 
 
@@ -60,13 +52,6 @@ class Field:  # клетка поля
                     area.append((r, c))
         return area
 
-
-    def set_color(self, color=None):
-        '''
-        присваивает цвет полю. цвет вычисляется в World
-        '''
-        if self.app.is_draw(self):
-            self.world.itemconfigure(self.shape, fill=color)
 
     def create_plant(self):
         """
@@ -94,6 +79,9 @@ class Field:  # клетка поля
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
         Seed(self, sx, sy, seed_mass)
+
+    def update(self):
+        self.change_field_objects = {'new': [], 'obsolete': []}
 
     def update_rot(self):
         rot_list = list(self.rot)
@@ -133,6 +121,11 @@ class Field:  # клетка поля
         l = len(self.area)
         return self.area[random.randrange(l)]
 
+    def add_to_new_pool(self, obj):
+        self.change_field_objects['new'].append(obj)
+
+    def add_to_obsolete_pool(self, obj):
+        self.change_field_objects['obsolete'].append(obj)
 
     def info(self):
         self.starving = 0
@@ -163,22 +156,6 @@ class Field:  # клетка поля
         s.append(f'{(self.plant_mass + self.rot_mass + self.seed_mass + self.soil):7.1f}\n')
         field_string = '\t'.join(s).replace('.', ',')
         return field_string
-
-    def create_tooltip_text(self):
-        text = f'Клетка: {self.row:02d}x{self.col:02d}\n'
-        text += f'Растений: {self.counts["plant"]:4d}({self.plant_mass:6.1f})\n'
-        text += f'Семян: {self.counts["seed"]:4d}({self.seed_mass:6.1f})\n'
-        text += f'Гнили: {self.counts["rot"]:4d}({self.rot_mass:6.1f})\n'
-        text += f'Масса почвы: {self.soil:6.1f}'
-        return text
-    # в момент, когда графическией элемент удаляется, а подсказка была активирована, подтсказка
-    # остается висеть навсегда, потому что не срабатывает обработчик выхода из поля объекта - его нет.
-
-
-    def update(self):
-        if self.draw:
-            self.tooltip.text=self.create_tooltip_text()
-
 
     @staticmethod
     def phys_to_screen(x, y):

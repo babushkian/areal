@@ -39,7 +39,6 @@ class Seed(Plant_proto):
         self.destroy_seed()
 
     def destroy_seed(self):
-        self.del_img()
         self.count_down()
         del self.field.seeds[self.id]
 

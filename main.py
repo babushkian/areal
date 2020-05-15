@@ -3,6 +3,7 @@ import random
 import time
 from tkinter import *
 from areal import constants as cn
+from areal import graphics
 from areal import world
 from areal.help import HelpButton
 from areal.plant import Plant
@@ -19,7 +20,7 @@ class App(Tk):
         metr = os.path.join(self.sim_dir, 'metric.csv')
         self.metr_file = open(metr, 'w', encoding='UTF16')
         self.interface_build()
-        self.canv.population_metric_head(self.metr_file)
+        self.canv.wld.population_metric_head(self.metr_file)
         self.bind('<Escape>', self.restart)
         self.bind('<space>', self.start_stop)
         self.bind('<Right>', self.one_step)
@@ -31,7 +32,7 @@ class App(Tk):
         self.minsize(1000, 760)
         self.canvframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
-        self.canv = world.World(self.canvframe, self)
+        self.canv = graphics.GW(self.canvframe, self)
 
         self.rightframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.rightframe.pack(side=RIGHT, expand=YES, fill=BOTH)
@@ -79,6 +80,7 @@ class App(Tk):
                 self.sim_state = False
 
     def restart(self, event=None):
+
         if cn.RANDOM_ON:
             self.entry.config(state=DISABLED)
             self.rand_label.config(text='Генератор истинно случайных чисел.')
@@ -89,13 +91,14 @@ class App(Tk):
         self.chbox.enable_checkbutton()
         if not self.canv.newborn:
             self.canv.destroy()
-            self.canv = world.World(self.canvframe, self)
+            self.canv = graphics.GW(self.canvframe, self)
 
     def is_draw(self, obj):
         return self.chbox.is_draw(obj)
 
     def quit(self):
-        self.canv.logging_close()
+        self.canv.end_of_simulation()
+        #self.canv.wld.logging_close()
         self.destroy()
 
 
@@ -154,18 +157,18 @@ class InfoLabels(Frame):
             self.labels.append(a)
 
     def update_a(self):
-        if self.app.canv.world_mass == 0:
+        if self.app.canv.wld.world_mass == 0:
             plant_percent = seed_percent = rot_percent = soil_percent = 0
             #print("ZERO")
         else:
-            plant_percent = self.app.canv.plant_mass / self.app.canv.world_mass * 100
-            seed_percent = self.app.canv.seed_mass / self.app.canv.world_mass * 100
-            rot_percent = self.app.canv.rot_mass / self.app.canv.world_mass * 100
-            soil_percent = self.app.canv.soil_mass / self.app.canv.world_mass * 100
+            plant_percent = self.app.canv.wld.plant_mass / self.app.canv.wld.world_mass * 100
+            seed_percent = self.app.canv.wld.seed_mass / self.app.canv.wld.world_mass * 100
+            rot_percent = self.app.canv.wld.rot_mass / self.app.canv.wld.world_mass * 100
+            soil_percent = self.app.canv.wld.soil_mass / self.app.canv.wld.world_mass * 100
 
-        data = (self.app.canv.global_time,
+        data = (self.app.canv.wld.global_time,
                 Plant.COUNT,
-                self.app.canv.starving_percent,
+                self.app.canv.wld.starving_percent,
                 Seed.COUNT,
                 Rot.COUNT,
                 plant_percent,

@@ -1,7 +1,7 @@
 from tkinter import *
 import os
 import time
-from main import InfoLabels
+from areal import graphics
 from areal import world
 from areal import constants as cn
 from areal import draw_fig
@@ -18,10 +18,9 @@ class App(Tk):
         self.metr_file = metr
 
         self.bind('<Escape>', self.cancel_sim)
-        self.canv = world.World(self, self)
+        self.canv = graphics.GW(self, self)
         if os.path.getsize(self.metr_file.name) == 0:
-            self.canv.population_metric_head(self.metr_file)
-        self.labelframe = InfoLabels(self, self)
+            self.canv.wld.population_metric_head(self.metr_file)
         self.update_a()
         self.canv.init_sim()
         self.canv.update_a()
@@ -31,11 +30,10 @@ class App(Tk):
             self.draw_figure()
             self.destroy()
         else:
-            self.labelframe.update_a()
-            self.after(1, self.update_a)
+            self.after(10, self.update_a)
 
     def draw_figure(self):
-        for file in self.canv.log_functions:
+        for file in self.canv.wld.log_functions:
             draw_fig.draw_pic(os.path.abspath(file.name), self.img_dir)
 
     def is_draw(self, obj):
@@ -54,6 +52,10 @@ if __name__ == '__main__':
     progib = [0, 0.5, 1.5, 3]
     life = [1, 3, 5, 7]
 
+    soil = [240]
+    condit = [40]
+    progib = [0]
+    life = [7]
 
     cur_date = time.time()
     sim_dir = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))

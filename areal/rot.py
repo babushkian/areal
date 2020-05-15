@@ -28,7 +28,6 @@ class Rot(Plant_proto):
 
 
     def become_soil(self):
-        self.del_img()
         self.count_down()
         self.field.soil += self.all_energy  # растение превращается в почву
         del self.field.rot[self.id]

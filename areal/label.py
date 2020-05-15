@@ -16,7 +16,7 @@ class CanvasTooltip:
 
     Alberto Vassena on 2016.12.10.
     '''
-
+    OPENED = list()
     def __init__(self, canvas, tag_or_id,
                  *,
                  bg='#FFFFEA',
@@ -31,7 +31,6 @@ class CanvasTooltip:
         self.label = None
         self.canvas.tag_bind(tag_or_id, "<Enter>", self.onEnter)
         self.canvas.tag_bind(tag_or_id, "<Leave>", self.onLeave)
-        self.canvas.tag_bind(tag_or_id, "<ButtonPress>", self.onLeave)
         self.bg = bg
         self.pad = pad
         self.id = None
@@ -110,7 +109,7 @@ class CanvasTooltip:
 
         # creates a toplevel window
         self.tw = tk.Toplevel(canvas.master)
-
+        CanvasTooltip.OPENED.append(self)
         # Leaves only the label and removes the app window
         self.tw.wm_overrideredirect(True)
 
@@ -141,8 +140,10 @@ class CanvasTooltip:
 
     def hide(self):
         if self.tw:
+            CanvasTooltip.OPENED.pop(CanvasTooltip.OPENED.index(self))
             self.label.destroy()
             del self.label
             self.tw.destroy()
+
         self.tw = None
 
