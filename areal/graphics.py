@@ -29,7 +29,7 @@ class GW(Canvas):
 
 
     def create_fields(self):
-        if cn.GRAPH_DICT['field']:
+        if self.app.is_draw('field'):
             cd = cn.FIELD_SIZE_PIXELS
             for row in range(cn.FIELDS_NUMBER_BY_SIDE):
                 for col in range(cn.FIELDS_NUMBER_BY_SIDE):
@@ -42,7 +42,7 @@ class GW(Canvas):
 
     def create_objects(self):
         for o in self.wld.change_scene['new']:
-            if cn.GRAPH_DICT[o.name]:
+            if self.app.is_draw(o.name):
                 (size, color, border) = cn.DRAW_PARAMS[o.name].values()
                 being =  self.create_rectangle(o.sx - size, o.sy - size,
                                                o.sx + size, o.sy + size,
@@ -51,7 +51,7 @@ class GW(Canvas):
 
     def delete_objects(self):
         for o in self.wld.change_scene['obsolete']:
-            if cn.GRAPH_DICT[o.name]:
+            if self.app.is_draw(o.name):
                 self.delete(self.objects_on_screen[o])
 
     def update_objects(self):
@@ -103,7 +103,7 @@ class GW(Canvas):
             t = int(7 * math.log2(field.soil + 1))
             return f'gray{t}'
 
-        if cn.GRAPH_DICT['field']:
+        if self.app.is_draw('field'):
             for field in self.fields: # итерация по объектам клеток
                 if cn.GRAPH_FIELD:
                     back = soil_color(field) # объект клетки к качестве параметра

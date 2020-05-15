@@ -93,8 +93,8 @@ class App(Tk):
             self.canv.destroy()
             self.canv = graphics.GW(self.canvframe, self)
 
-    def is_draw(self, obj):
-        return self.chbox.is_draw(obj)
+    def is_draw(self, objname):
+        return self.chbox.is_draw(objname)
 
     def quit(self):
         self.canv.end_of_simulation()
@@ -131,8 +131,8 @@ class Checkers(Frame):
         for x in self.CHECKS:
             self.CHECKS[x][0].config(state=NORMAL)
 
-    def is_draw(self, obj):
-        return Checkers.CHECKS[obj.name][1].get()
+    def is_draw(self, objname):
+        return Checkers.CHECKS[objname][1].get()
 
 
 class InfoLabels(Frame):

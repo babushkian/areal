@@ -224,7 +224,7 @@ class World():
         s.append(str(cn.PLANT_MAX_MASS))
         s.append(str(self.sign_plant_num))
         s.append(str(self.sign_seeds_born))
-        s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100):4.1f}')
+        s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100 if self.sign_seeds_born > 0 else 0 ):4.1f}')
         s.append(f'{self.sign_plant_mass_energy:10.0f}')
         s.append(f'{self.soil_flow:10.0f}\n')
 
