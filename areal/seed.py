@@ -16,7 +16,8 @@ class Seed(Plant_proto):
         self.all_energy = seed_mass
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.field.seeds[self.id] = self
-
+        self.world.db.insert_seed(self)
+		
     def update(self):
         super().update()
         if self.age > cn.SEED_LIFE * cn.MONTHS:
@@ -35,10 +36,12 @@ class Seed(Plant_proto):
             self.become_rot()
 
     def become_rot(self):
+        self.world.db.seed_death(self)									  
         Rot(self.field, self.sx, self.sy, self.all_energy)
         self.destroy_seed()
 
     def destroy_seed(self):
+        self.world.db.seed_death(self)									  
         self.count_down()
         del self.field.seeds[self.id]
 

@@ -15,10 +15,11 @@ class Field:  # клетка поля
     FIELD_GRAPH_TO_PHYS_PROPORTION = cn.PHYS_SIZE / cn.FIELDS_NUMBER_BY_SIDE
 
 
-    def __init__(self, world, row, col, soil = cn.INIT_SOIL):
+    def __init__(self, world, row, col, soil):
         self.world = world
         self.row = row
         self.col = col
+        self.id = f'{self.row:02d}x{self.col:02d}'
         self.name = 'field'
         self.tooltip = None
         self.starving = 0

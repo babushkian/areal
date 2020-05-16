@@ -16,10 +16,12 @@ class App(Tk):
         super().__init__()
         self.series = True  # единичная симуляция, а не серия
         self.sim_state = False
+        self.sim_number = 1
         self.sim_directory()
         metr = os.path.join(self.sim_dir, 'metric.csv')
         self.metr_file = open(metr, 'w', encoding='UTF16')
         self.interface_build()
+        #нельзя переносить в world или graphic. потому что файл изаголовок общий для всех симуляций
         self.canv.wld.population_metric_head(self.metr_file)
         self.bind('<Escape>', self.restart)
         self.bind('<space>', self.start_stop)
@@ -86,10 +88,11 @@ class App(Tk):
             self.rand_label.config(text='Генератор истинно случайных чисел.')
         else:
             random.seed(self.random_var.get())
-
+        self.sim_number += 1
         self.sim_state = False
         self.chbox.enable_checkbutton()
         if not self.canv.newborn:
+            self.canv.wld.db.close_connection()
             self.canv.destroy()
             self.canv = graphics.GW(self.canvframe, self)
 

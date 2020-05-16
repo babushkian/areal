@@ -95,6 +95,7 @@ class GW(Canvas):
                 self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
         self.wld.population_metric_record(self.app.metr_file)
         self.app.metr_file.flush()
+        self.wld.db.close_connection()
         self.wld.logging_close()
 
 

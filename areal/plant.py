@@ -1,4 +1,4 @@
-﻿
+﻿# graphic version
 from areal import constants as cn
 
 from areal.proto import Plant_proto
@@ -10,10 +10,10 @@ class Plant(Plant_proto):
     BREED_TIME = int(cn.FRUITING_PERIOD * cn.MONTHS)
     TIME_COEF = 4 / cn.MONTHS  # коэффициент влияющий на скорость роста и питания
     # чем больше скважность, тем более мелкими порциями растение питается
-    GROW_UP_PER_IIC = 15 / cn.MONTHS
-    ALPHA = 0.1 * GROW_UP_PER_IIC
-    BETA = 0.3 * GROW_UP_PER_IIC
-    GAMA = 0.5 * GROW_UP_PER_IIC
+    GROW_UP_PER_TIC = 15 / cn.MONTHS
+    ALPHA = 0.1 * GROW_UP_PER_TIC
+    BETA = 0.3 * GROW_UP_PER_TIC
+    GAMA = 0.5 * GROW_UP_PER_TIC
     EPSILON = 0.3
 
 
@@ -24,6 +24,7 @@ class Plant(Plant_proto):
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.field.plants[self.id] = self
+        self.world.db.insert_plant(self)								
 
 
     def count_needs(self):
@@ -53,6 +54,7 @@ class Plant(Plant_proto):
                 self.field.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
             self.info()
+            self.world.db.update_plant_mass(self)
 
     def split_mass(self):
         """
@@ -64,11 +66,10 @@ class Plant(Plant_proto):
         self.all_energy -= cn.TOTAL_SEED_MASS
         return cn.TOTAL_SEED_MASS
 
-    def die(self, string=None):
-        if string is not None:
-            print("DIES of ", string)
+    def die(self):
         self.count_down()
         self.world.sign_plant_mass_energy += self.all_energy
+        self.world.db.plant_death(self)
         Rot(self.field, self.sx, self.sy, self.all_energy)
         del self.field.plants[self.id]
 
