@@ -20,11 +20,9 @@ class Plant(Plant_proto):
     def __init__(self,  field, sx, sy):
         self.name = 'plant'
         super().__init__(field, sx, sy)
-        self.world.sign_plant_num += 1
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.field.plants[self.id] = self
-        self.world.db.insert_plant(self)								
 
 
     def count_needs(self):
@@ -54,7 +52,6 @@ class Plant(Plant_proto):
                 self.field.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
             self.info()
-            self.world.db.update_plant_mass(self)
 
     def split_mass(self):
         """
@@ -68,8 +65,6 @@ class Plant(Plant_proto):
 
     def die(self):
         self.count_down()
-        self.world.sign_plant_mass_energy += self.all_energy
-        self.world.db.plant_death(self)
         Rot(self.field, self.sx, self.sy, self.all_energy)
         del self.field.plants[self.id]
 

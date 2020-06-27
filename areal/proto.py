@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from areal import constants as cn
 
-
-
 class Plant_proto(ABC):
     def __init__(self, field, sx, sy):
         self.field = field
@@ -17,13 +15,9 @@ class Plant_proto(ABC):
         self.id = cn.global_counter()
         self.field.add_to_new_pool(self)
 
-
-
-
     @abstractmethod
     def update(self):
         self.age += 1
-
 
     def count_down(self):
         type(self).COUNT -= 1

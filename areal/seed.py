@@ -12,12 +12,10 @@ class Seed(Plant_proto):
         # зависела от этого запаса. А сам запас определялся геномом растений
         self.name = 'seed'
         super().__init__(field, sx, sy)
-        self.world.sign_seeds_born += 1
         self.all_energy = seed_mass
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.field.seeds[self.id] = self
-        self.world.db.insert_seed(self)
-		
+
     def update(self):
         super().update()
         if self.age > cn.SEED_LIFE * cn.MONTHS:
@@ -29,19 +27,16 @@ class Seed(Plant_proto):
 
     def grow_up(self):
         if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
-            self.world.sign_seeds_grow_up += 1
             Plant(self.field,  self.sx, self.sy)
             self.destroy_seed()
         else:
             self.become_rot()
 
     def become_rot(self):
-        self.world.db.seed_death(self)									  
         Rot(self.field, self.sx, self.sy, self.all_energy)
         self.destroy_seed()
 
     def destroy_seed(self):
-        self.world.db.seed_death(self)									  
         self.count_down()
         del self.field.seeds[self.id]
 
