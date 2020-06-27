@@ -24,10 +24,11 @@ class Field:  # клетка поля
         self.tooltip = None
         self.starving = 0
         self.counts = Counter({'plant':0, 'seed':0, 'rot':0})
-        self.plants = {} # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
-        self.to_breed = [] # растения, готовые к размножению
-        self.rot = {} # гниль на клетке
-        self.seeds = {} # семена на клетке
+        self.plants = dict() # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
+        self.to_breed = list() # растения, готовые к размножению
+        self.rot = dict() # гниль на клетке
+        self.seeds = dict() # семена на клетке
+        self.objects = list()
         self.seed_mass =0
         self.plant_mass = 0
         self.rot_mass = 0
@@ -67,7 +68,7 @@ class Field:  # клетка поля
         # экранные координаты
         sx, sy = self.phys_to_screen(x, y)
 
-        if self.counts["plant"] < self.MAX_PLANTS_IN_FIELD:
+        if self.counts['plant'] < self.MAX_PLANTS_IN_FIELD:
             Plant(self, sx, sy)
         else:
             Rot(self, sx, sy, cn.TOTAL_SEED_MASS)
@@ -83,6 +84,7 @@ class Field:  # клетка поля
 
     def update(self):
         self.change_field_objects = {'new': [], 'obsolete': []}
+        self.objects = list()
 
     def update_rot(self):
         rot_list = list(self.rot)
@@ -99,7 +101,6 @@ class Field:  # клетка поля
         for seed in seeds_list:
             self.seeds[seed].update()
 
-
     def update_plants(self):
         if self.counts['plant'] > 0:
             if self.to_breed:
@@ -108,6 +109,10 @@ class Field:  # клетка поля
             self.plant_ration = self.soil/self.counts['plant']
             for plant in plants_list:
                 self.plants[plant].update()
+
+    def update_objs(self):
+        for i in (self.plants,self.seeds, self.rot):
+            self.objects.extend(i.values())
 
     def breed_plants(self):
         for p in self.to_breed:

@@ -30,7 +30,6 @@ class World():
     def update(self):
         self.update_fields()
         self.update_objects()
-        self.debug_obj_count()
 
     def debug_obj_count(self):
         print(f'pl:{Plant.COUNT} se:{Seed.COUNT}  ro:{Rot.COUNT}')
@@ -81,6 +80,8 @@ class World():
             for row in range(cn.FIELDS_NUMBER_BY_SIDE):
                 for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                     func(self.fields[row][col])
+                    self.fields[row][col].update_objs()
+                    #print(self.fields[row][col].objects)
         self.gather_changed_objects()
 
     def drop_changed_objects(self):

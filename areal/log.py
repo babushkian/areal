@@ -4,9 +4,8 @@ from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 class Log:
-    def __init__(self, parent):
-        self.parent = parent
-        self.world = parent.world
+    def __init__(self, hvn):
+        self.hvn = hvn
         self.logfile_associations = {'every_plant_life': self.log_plants,
                              'fields_info': self.log_fields,
                              'world_info': self.log_world}
@@ -14,30 +13,30 @@ class Log:
         suffix = self.file_suffix()
         for action, name, header in cn.LOGGING:
             if action:
-                fname = os.path.join(self.parent.sim_dir, f'{name}_{suffix}.csv')
+                fname = os.path.join(self.hvn.sim_dir, f'{name}_{suffix}.csv')
                 f = open(fname, 'w', encoding='UTF16')
                 f.write(header)
                 self.log_functions[f] = self.logfile_associations[name]
 
 
     def log_world(self, file):
-        s = f'{self.world.years}\t{self.world.global_time}\t{Plant.COUNT}\t'
-        s += f'{Plant.COUNT - self.parent.starving}\t{self.parent.starving}\t'
+        s = f'{self.hvn.world.years}\t{self.hvn.world.global_time}\t{Plant.COUNT}\t'
+        s += f'{Plant.COUNT - self.hvn.starving}\t{self.hvn.starving}\t'
         s += f'{Seed.COUNT}\t'
         s += f'{Rot.COUNT}\t'
-        s += f'{self.parent.seed_mass:8.1f}\t{self.parent.plant_mass:8.1f}\t{self.parent.rot_mass:8.1f}\t'
-        s += f'{self.parent.soil_mass:8.1f}\t{self.parent.world_mass:8.1f}\n'
+        s += f'{self.hvn.seed_mass:8.1f}\t{self.hvn.plant_mass:8.1f}\t{self.hvn.rot_mass:8.1f}\t'
+        s += f'{self.hvn.soil_mass:8.1f}\t{self.hvn.world_mass:8.1f}\n'
         file.write(s.replace('.', ','))
 
     def log_fields(self, file):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                file.write(self.world.fields[row][col].write_info())
+                file.write(self.hvn.world.fields[row][col].write_info())
 
     def log_plants(self, file):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for plant in self.world.fields[row][col].plants.values():
+                for plant in self.hvn.world.fields[row][col].plants.values():
                     file.write(plant.info())
 
     @staticmethod
@@ -84,7 +83,7 @@ class Log:
     def population_metric_record(self, file):
         s = list()
         s.append(str(cn.FIELDS_NUMBER_BY_SIDE))
-        s.append(str(self.world.global_time))
+        s.append(str(self.hvn.world.global_time))
         s.append(str(cn.INIT_SOIL))
         s.append(str(cn.SEED_GROW_UP_CONDITION))
         s.append(str(cn.SEED_PROHIBITED_GROW_UP))
@@ -92,7 +91,7 @@ class Log:
         s.append(str(cn.SEED_MASS))
         s.append(str(cn.PLANT_LIFETIME_YEARS))
         s.append(str(cn.PLANT_MAX_MASS))
-        #s.append(str(self.parent.sign_plant_num))
+        #s.append(str(self.hvn.sign_plant_num))
         #s.append(str(self.sign_seeds_born))
         #s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100 if self.sign_seeds_born > 0 else 0 ):4.1f}')
         #s.append(f'{self.sign_plant_mass_energy:10.0f}')

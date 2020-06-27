@@ -76,14 +76,14 @@ class Heaven:
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
                 self.db.insert_field(self.world.fields[row][col])
-        self.db_write()
+        self.db.db_write()
 
 
     def update(self):
         self.world.time_pass()
         self.db.insert_time()
         self.world.update()
-        self.db_write()
+        self.db.db_write()
         self.living_beings = Plant.COUNT + Seed.COUNT # проверяем, есть кто живой на карте
 
         self.statistics() # изменить двойной цикл по клеткам на одинарный
@@ -96,22 +96,6 @@ class Heaven:
                 self.graph.update_a()
         else:
             self.end_of_simulation()
-
-    def db_write(self):
-        for obj in self.world.change_scene['new']:
-            if obj.name == 'plant':
-                self.db.insert_plant(obj)
-            if obj.name == 'seed':
-                self.db.insert_seed(obj)
-            if obj.name == 'rot':
-                self.db.insert_rot(obj)
-        for obj in self.world.change_scene['obsolete']:
-            if obj.name == 'plant':
-                self.db.plant_death(obj)
-            if obj.name == 'seed':
-                self.db.seed_death(obj)
-            if obj.name == 'rot':
-                self.db.rot_to_soil(obj)
 
 
     def check_end_of_simulation(self):

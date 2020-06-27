@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from areal import constants as cn
 
 class WorldBase:
 
@@ -8,6 +9,14 @@ class WorldBase:
         base = os.path.join(self.hvn.sim_dir, 'world.db')
         self.conn = sqlite3.connect(base)
         self.c = self.conn.cursor()
+        self.obj_type_associations = {'plant': {'new': self.insert_plant, 'obsolete':self.plant_death},
+                                      'seed': {'new': self.insert_seed, 'obsolete': self.seed_death},
+                                      'rot': {'new': self.insert_rot, 'obsolete': self.rot_to_soil}
+        }
+        self.obj_type_associations_in_field = {'plant': self.update_plant_mass,
+                                                'seed': self.seed_pass,
+                                                'rot': self.update_rot_mass}
+
         '''
         self.c.execute('DROP TABLE IF EXISTS parameters')
         self.c.execute('DROP TABLE IF EXISTS time')
@@ -111,6 +120,16 @@ class WorldBase:
         self.c.close()
         self.conn.close()
 
+    def db_write(self):
+        for pool in['new', 'obsolete']:
+            for obj in self.hvn.world.change_scene[pool]:
+                func = self.obj_type_associations[obj.name][pool]
+                func(obj)
+        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
+            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
+                for obj in self.hvn.world.fields[row][col].objects:
+                    func = self.obj_type_associations_in_field[obj.name]
+                    func(obj)
 
     def insert_params(self, params):
         self.c.execute("""INSERT INTO parameters (sim_id,
@@ -151,6 +170,9 @@ class WorldBase:
 
     def insert_seed(self, seed):
         self.c.execute('INSERT INTO seeds (seed_id, field_id, birth) VALUES (?, ?, ?)', (seed.id, seed.field.id, self.tick_id))
+
+    def seed_pass(self, seed):
+        pass
 
     def seed_death(self, seed):
         self.c.execute('UPDATE seeds SET death = (?) WHERE seed_id = (?)', (self.tick_id, seed.id))
