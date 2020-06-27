@@ -3,9 +3,9 @@ import os
 
 class WorldBase:
 
-    def __init__(self, world, dir):
-        self.world = world
-        base = os.path.join(dir, 'world.db')
+    def __init__(self, hvn):
+        self.hvn = hvn
+        base = os.path.join(self.hvn.sim_dir, 'world.db')
         self.conn = sqlite3.connect(base)
         self.c = self.conn.cursor()
         '''
@@ -130,9 +130,9 @@ class WorldBase:
 
 
     def insert_time(self):
-        self.tick_id = self.world.global_time + 1_000_000 * self.world.app.sim_number
+        self.tick_id = self.hvn.world.global_time + 1_000_000 * self.hvn.sim_number
         self.c.execute('INSERT INTO time (tick_id, tick, sim_id) VALUES (?, ?, ?)',
-                       (self.tick_id, self.world.global_time, self.world.app.sim_number))
+                       (self.tick_id, self.hvn.world.global_time, self.hvn.sim_number))
 
     def insert_field(self, field):
         self.c.execute('INSERT OR REPLACE INTO fields (field_id, row, col) VALUES (?, ?, ?)', (field.id, field.row, field.col))

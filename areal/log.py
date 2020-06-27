@@ -37,7 +37,7 @@ class Log:
     def log_plants(self, file):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for plant in self.fields[row][col].plants.values():
+                for plant in self.world.fields[row][col].plants.values():
                     file.write(plant.info())
 
     @staticmethod
@@ -84,7 +84,7 @@ class Log:
     def population_metric_record(self, file):
         s = list()
         s.append(str(cn.FIELDS_NUMBER_BY_SIDE))
-        s.append(str(self.global_time))
+        s.append(str(self.world.global_time))
         s.append(str(cn.INIT_SOIL))
         s.append(str(cn.SEED_GROW_UP_CONDITION))
         s.append(str(cn.SEED_PROHIBITED_GROW_UP))
@@ -92,12 +92,12 @@ class Log:
         s.append(str(cn.SEED_MASS))
         s.append(str(cn.PLANT_LIFETIME_YEARS))
         s.append(str(cn.PLANT_MAX_MASS))
-        s.append(str(self.sign_plant_num))
-        s.append(str(self.sign_seeds_born))
-        s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100 if self.sign_seeds_born > 0 else 0 ):4.1f}')
-        s.append(f'{self.sign_plant_mass_energy:10.0f}')
-        s.append(f'{self.soil_flow:10.0f}\n')
-
+        #s.append(str(self.parent.sign_plant_num))
+        #s.append(str(self.sign_seeds_born))
+        #s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100 if self.sign_seeds_born > 0 else 0 ):4.1f}')
+        #s.append(f'{self.sign_plant_mass_energy:10.0f}')
+        #s.append(f'{self.soil_flow:10.0f}')
+        s.append('\n')
         string = '\t'.join(s)
         string=string.replace('.', ',')
         file.write(string)

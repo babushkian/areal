@@ -96,4 +96,3 @@ class World():
                     changes = self.fields[row][col].change_field_objects[key]
                     if changes:
                         self.change_scene[key].extend(changes)
-

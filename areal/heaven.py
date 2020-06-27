@@ -10,12 +10,19 @@ from areal.seed import Seed
 from areal.rot import Rot
 
 class Heaven:
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         self.world = World()
-        self.graph =
+        if cn.GRAPHICS:
+            self.graph = GW()
+        else:
+            self.graph = None
         self.db = None
         self.sim_number = 0
         self.sim_dir  = self.init_sim_dir()
+        self.game_over = False
+        self.time_over = False
+        self.perish = False
         self.starving = 0  # растения, не получющие необходимое количество пищи
         self.starving_percent = 0
         self.world_mass = 0
@@ -58,26 +65,72 @@ class Heaven:
             t.append(cn.PLANT_MAX_MASS)
             return tuple(t)
 
-        self.db = WorldBase(self, self.sim_dir)
+        self.db = WorldBase(self)
         self.db.insert_params(param_tuple())
         self.db.insert_time()
-        self.logging = Log(self.sim_dir)
+        metr = os.path.join(self.sim_dir, 'metric.csv')
+        self.metric_file = open(metr, 'w', encoding='UTF16')
+        self.logging = Log(self)
+        self.logging.population_metric_head(self.metric_file)
         self.world.init_sim()
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.db.insert_field(f)
+                self.db.insert_field(self.world.fields[row][col])
+        self.db_write()
 
 
     def update(self):
         self.world.time_pass()
         self.db.insert_time()
         self.world.update()
+        self.db_write()
         self.living_beings = Plant.COUNT + Seed.COUNT # проверяем, есть кто живой на карте
 
         self.statistics() # изменить двойной цикл по клеткам на одинарный
         self.logging.write()
         if self.world.global_time % (3*cn.MONTHS) == 0:
             self.db.commit()
+        self.check_end_of_simulation()
+        if not self.game_over:
+            if cn.GRAPHICS and self.app.sim_state:
+                self.graph.update_a()
+        else:
+            self.end_of_simulation()
+
+    def db_write(self):
+        for obj in self.world.change_scene['new']:
+            if obj.name == 'plant':
+                self.db.insert_plant(obj)
+            if obj.name == 'seed':
+                self.db.insert_seed(obj)
+            if obj.name == 'rot':
+                self.db.insert_rot(obj)
+        for obj in self.world.change_scene['obsolete']:
+            if obj.name == 'plant':
+                self.db.plant_death(obj)
+            if obj.name == 'seed':
+                self.db.seed_death(obj)
+            if obj.name == 'rot':
+                self.db.rot_to_soil(obj)
+
+
+    def check_end_of_simulation(self):
+        if not self.world.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
+            self.time_over = True
+            self.game_over = True
+        if self.count_of_world_objects < 1:
+            self.perish = True
+            self.game_over = True
+
+
+    def end_of_simulation(self):
+        if cn.GRAPHICS:
+            self.graph.display_end_of_simulation()
+        self.logging.population_metric_record(self.metric_file)
+        self.metric_file.flush()
+        self.db.close_connection()
+        self.logging.logging_close()
+
 
     def statistics(self):
         self.soil_mass = 0
@@ -105,21 +158,3 @@ class Heaven:
             self.starving_percent = self.starving / Plant.COUNT * 100
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
         self.count_of_world_objects = Plant.COUNT + Seed.COUNT + Rot.COUNT
-
-
-    def check_end_of_simulation(self):
-        if not self.world.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
-            self.time_over = True
-            self.game_over = True
-        if self.count_of_world_objects < 1:
-            self.perish = True
-            self.game_over = True
-
-
-    def end_of_simulation(self):
-        if cn.GRAPHICS:
-            display_end_of_simulation
-        self.world.population_metric_record(self.app.metr_file)
-        self.app.metr_file.flush()
-        self.world.db.close_connection()
-        self.world.logging_close()
