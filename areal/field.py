@@ -1,9 +1,9 @@
 ﻿import random
-import math
 from collections import Counter
 
 
 from areal import constants as cn
+from areal.proto import Plant_proto
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
@@ -19,7 +19,7 @@ class Field:  # клетка поля
         self.world = world
         self.row = row
         self.col = col
-        self.id = f'{self.row:02d}x{self.col:02d}'
+        self.id = self.coord_to_id(row, col)
         self.name = 'field'
         self.tooltip = None
         self.starving = 0
@@ -36,7 +36,7 @@ class Field:  # клетка поля
         self.change_field_objects = {'new': [], 'obsolete': []}
         self.soil = soil
         # физические координаты поля: его центра и краев
-        self.center_x, self.center_y = self.graph_to_phys(row, col)
+        self.center_x, self.center_y = Plant_proto.graph_to_phys(row, col)
         self.lu_x = self.center_x - self.FIELD_GRAPH_TO_PHYS_PROPORTION # left-up conner
         self.lu_y = self.center_y + self.FIELD_GRAPH_TO_PHYS_PROPORTION
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
@@ -58,20 +58,17 @@ class Field:  # клетка поля
     def create_plant(self):
         """
         Вызывается из класса World при размножении расений
-        Служит для инициалищзации пастений  вначале симуляции. В дальнейшем не используется,
+        Служит для инициалищзации растений  в начале симуляции. В дальнейшем не используется,
         растения прорастают из семян
         """
         # определяем координаты новорожденного растения
         # физические координаты
         x = self.lu_x + random.randrange(int(self.rd_x - self.lu_x))
         y = self.rd_y + random.randrange(int(self.lu_y - self.rd_y))
-        # экранные координаты
-        sx, sy = self.phys_to_screen(x, y)
-
         if self.counts['plant'] < self.MAX_PLANTS_IN_FIELD:
-            Plant(self, sx, sy)
+            Plant(self, x, y)
         else:
-            Rot(self, sx, sy, cn.TOTAL_SEED_MASS)
+            Rot(self, x, y, cn.TOTAL_SEED_MASS)
 
     def create_seed(self, seed_mass):
         # определяем координаты новорожденного растения
@@ -79,8 +76,7 @@ class Field:  # клетка поля
         x = self.lu_x + random.randrange(int(self.rd_x - self.lu_x))
         y = self.rd_y + random.randrange(int(self.lu_y - self.rd_y))
         # экранные координаты
-        sx, sy = self.phys_to_screen(x, y)
-        Seed(self, sx, sy, seed_mass)
+        Seed(self, x, y, seed_mass)
 
     def update(self):
         self.change_field_objects = {'new': [], 'obsolete': []}
@@ -118,9 +114,10 @@ class Field:  # клетка поля
         for p in self.to_breed:
             # выбираем случайную клетку в окрестностях, чтобы засеять семя
             l = len(p.field.area)
-            row, col = self.get_near_field_coords()
+            x, y = self.get_near_field_coords()
+            id = self.coord_to_id(x, y)
             seed_mass = p.split_mass()
-            self.world.create_seed(row, col, seed_mass)
+            self.world.create_seed(id, seed_mass)
         self.to_breed = []
 
     def get_near_field_coords(self):
@@ -164,18 +161,12 @@ class Field:  # клетка поля
         return field_string
 
     @staticmethod
-    def phys_to_screen(x, y):
-        side = 2 * cn.PHYS_SIZE
-        scr_len = cn.FIELDS_NUMBER_BY_SIDE * cn.FIELD_SIZE_PIXELS
-        proportion = scr_len / side
-        sx = math.floor(x * proportion + scr_len / 2)
-        sy = math.floor(scr_len / 2 - y * proportion)
-        return sx, sy
+    def coord_to_id(row, col):
+        return f'{row:02d}x{col:02d}'
 
     @staticmethod
-    def graph_to_phys(row, col):
-        side = 2*cn.PHYS_SIZE
-        proportion = side/cn.FIELDS_NUMBER_BY_SIDE
-        x = (row + .5) *proportion - cn.PHYS_SIZE
-        y = cn.PHYS_SIZE - (col + .5) *proportion
-        return x, y
+    def id_to_coord(id):
+        coord = id.split('x')
+        row = int(coord[0])
+        col = int(coord[1])
+        return row, col

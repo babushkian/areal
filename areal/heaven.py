@@ -4,12 +4,16 @@ from areal import constants as cn
 from areal.world import World
 from areal.graphics import GW
 from areal.base import WorldBase
-from areal.log import Log
+from areal.log import Log, population_metric_head
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 
+SIM_DIR = None
+METRIC_FILE = None
+
 class Heaven:
+    SIM_NUMBER = 0
     def __init__(self, app):
         self.app = app
         self.world = World()
@@ -18,8 +22,7 @@ class Heaven:
         else:
             self.graph = None
         self.db = None
-        self.sim_number = 0
-        self.sim_dir  = self.init_sim_dir()
+        Heaven.SIM_NUMBER += 1
         self.game_over = False
         self.time_over = False
         self.perish = False
@@ -38,19 +41,10 @@ class Heaven:
         self.soil_flow = 0# МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции
         self.living_beings = 0
 
-    @staticmethod
-    def init_sim_dir():
-        cur_date = time.time()
-        sim_dir = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))
-        try:
-            os.mkdir(sim_dir)
-        except:
-            raise Exception('Не удалось создать каталог симуляции')
-        return sim_dir
 
     def init_sim(self):
         def param_tuple():
-            t = [self.sim_number]
+            t = [self.SIM_NUMBER]
             t.append(cn.FIELDS_NUMBER_BY_SIDE)
             t.append(cn.SIMULATION_PERIOD)
             t.append(cn.MAX_PLANTS_IN_FIELD)
@@ -65,17 +59,13 @@ class Heaven:
             t.append(cn.PLANT_MAX_MASS)
             return tuple(t)
 
-        self.db = WorldBase(self)
+        self.db = WorldBase(self, SIM_DIR)
         self.db.insert_params(param_tuple())
         self.db.insert_time()
-        metr = os.path.join(self.sim_dir, 'metric.csv')
-        self.metric_file = open(metr, 'w', encoding='UTF16')
-        self.logging = Log(self)
-        self.logging.population_metric_head(self.metric_file)
+        self.logging = Log(self, SIM_DIR)
         self.world.init_sim()
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.db.insert_field(self.world.fields[row][col])
+        for field in self.world.fields.values():
+            self.db.insert_field(field)
         self.db.db_write()
 
 
@@ -110,8 +100,8 @@ class Heaven:
     def end_of_simulation(self):
         if cn.GRAPHICS:
             self.graph.display_end_of_simulation()
-        self.logging.population_metric_record(self.metric_file)
-        self.metric_file.flush()
+        self.logging.population_metric_record(METRIC_FILE)
+        METRIC_FILE.flush()
         self.db.close_connection()
         self.logging.logging_close()
 
@@ -122,19 +112,17 @@ class Heaven:
         self.plant_mass = 0
         self.rot_mass = 0
         self.starving = 0
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                # считаем статистику
-                # подсчет масс растений семян, гнили и почвы на каждой клетке
-                field = self.world.fields[row][col]
-                field.info()
-                self.db.update_soil(field)
-                # подсчет полной массы почвы на на игровом поле
-                self.soil_mass += field.soil
-                self.seed_mass += field.seed_mass
-                self.plant_mass += field.plant_mass
-                self.rot_mass += field.rot_mass
-                self.starving += field.starving
+        for field in self.world.fields.values():
+            # считаем статистику
+            # подсчет масс растений семян, гнили и почвы на каждой клетке
+            field.info()
+            self.db.update_soil(field)
+            # подсчет полной массы почвы на на игровом поле
+            self.soil_mass += field.soil
+            self.seed_mass += field.seed_mass
+            self.plant_mass += field.plant_mass
+            self.rot_mass += field.rot_mass
+            self.starving += field.starving
         self.sign_plant_mass_integral += self.plant_mass
         if self.starving == 0:
             self.starving_percent = 0
@@ -142,3 +130,20 @@ class Heaven:
             self.starving_percent = self.starving / Plant.COUNT * 100
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
         self.count_of_world_objects = Plant.COUNT + Seed.COUNT + Rot.COUNT
+
+
+def init_sim_dir():
+    global SIM_DIR
+    cur_date = time.time()
+    SIM_DIR = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))
+    try:
+        os.mkdir(SIM_DIR)
+    except:
+        raise Exception('Не удалось создать каталог симуляции')
+    return SIM_DIR
+
+def init_metric():
+    global METRIC_FILE
+    metr = os.path.join(SIM_DIR, 'metric.csv')
+    METRIC_FILE = open(metr, 'w', encoding='UTF16')
+    population_metric_head(METRIC_FILE)

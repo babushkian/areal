@@ -7,11 +7,11 @@ from areal.rot import Rot
 
 class Seed(Plant_proto):
     COUNT = 0
-    def __init__(self, field,  sx, sy, seed_mass): # добавлю параметры позже
+    def __init__(self, field,  x, y, seed_mass): # добавлю параметры позже
         # в будущем у зерна надо сделать регулируемый запас питательных веществ, чтобы его жизнь
         # зависела от этого запаса. А сам запас определялся геномом растений
         self.name = 'seed'
-        super().__init__(field, sx, sy)
+        super().__init__(field, x, y)
         self.all_energy = seed_mass
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.field.seeds[self.id] = self
@@ -27,13 +27,13 @@ class Seed(Plant_proto):
 
     def grow_up(self):
         if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
-            Plant(self.field,  self.sx, self.sy)
+            Plant(self.field,  self.x, self.y)
             self.destroy_seed()
         else:
             self.become_rot()
 
     def become_rot(self):
-        Rot(self.field, self.sx, self.sy, self.all_energy)
+        Rot(self.field, self.x, self.y, self.all_energy)
         self.destroy_seed()
 
     def destroy_seed(self):

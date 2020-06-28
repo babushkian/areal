@@ -5,9 +5,9 @@ class Rot(Plant_proto):
     COUNT = 0
     # скорость гнеиния
     DECAY_SPEED = cn.PLANT_MAX_MASS / cn.MONTHS * cn.DECAY_MULTIPLIER
-    def __init__(self, field, sx ,sy, all_energy):
+    def __init__(self, field, x ,y, all_energy):
         self.name = 'rot'
-        super().__init__(field, sx, sy)
+        super().__init__(field, x, y)
         self.world = field.world
         self.field = field
         self.all_energy = all_energy

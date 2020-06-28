@@ -8,16 +8,12 @@ from areal.rot import Rot
 class World():
     def __init__(self):
         # создаем пустое игровое поле
-        temp = [None for _ in range(cn.FIELDS_NUMBER_BY_SIDE)]
-        self.fields = [temp[:] for x in range(cn.FIELDS_NUMBER_BY_SIDE)]
+        self.fields = dict() # в словаре содержатся объекты клеток; ключ - id клетки
         self.season_time = 0
         self.global_time = 0
         self.years = 0
         self.weather = weather.Weather()
-
         self.drop_changed_objects() # сбрасываем словарь self.change_scene
-
-
 
     def init_sim(self):
         Plant.COUNT = 0
@@ -43,45 +39,45 @@ class World():
 
     def plant_setup_1(self):
         for _ in range(5):
-            self.create_plant(int(cn.FIELDS_NUMBER_BY_SIDE / 2), int(cn.FIELDS_NUMBER_BY_SIDE / 2))
+            id = Field.coord_to_id(int(cn.FIELDS_NUMBER_BY_SIDE / 2), int(cn.FIELDS_NUMBER_BY_SIDE / 2))
+            self.create_plant(id)
 
     def plant_setup_2(self):
         for x in range(int(cn.FIELDS_NUMBER_BY_SIDE / 2) - 2, int(cn.FIELDS_NUMBER_BY_SIDE / 2) + 3):
             for y in range(int(cn.FIELDS_NUMBER_BY_SIDE / 2) - 2, int(cn.FIELDS_NUMBER_BY_SIDE / 2) + 3):
-                self.create_plant(x, y)
+                id = Field.coord_to_id(x, y)
+                self.create_plant(id)
 
     def plant_setup_3(self):
         for x in range(cn.FIELDS_NUMBER_BY_SIDE):
             for y in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.create_plant(x, y)
+                id = Field.coord_to_id(x, y)
+                self.create_plant(id)
 
 
     def create_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col] =  Field(self, row, col, cn.INIT_SOIL)
+                f =  Field(self, row, col, cn.INIT_SOIL)
+                self.fields[f.id] = f
 
+    def create_plant(self, id):
+        self.fields[id].create_plant()
 
-    def create_plant(self, row, col):
-        self.fields[row][col].create_plant()
-
-    def create_seed(self, row, col, seed_mass):
-        self.fields[row][col].create_seed(seed_mass)
+    def create_seed(self, id, seed_mass):
+        self.fields[id].create_seed(seed_mass)
 
 
     def update_fields(self):
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                self.fields[row][col].update()
+        for f in self.fields.values():
+            f.update()
 
     def update_objects(self):
         self.drop_changed_objects()
-        for func in (Field.update_rot, Field.update_seeds, Field.update_plants):
-            for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                    func(self.fields[row][col])
-                    self.fields[row][col].update_objs()
-                    #print(self.fields[row][col].objects)
+        for field in self.fields.values():
+            for func in (Field.update_rot, Field.update_seeds, Field.update_plants):
+                func(field)
+            field.update_objs()
         self.gather_changed_objects()
 
     def drop_changed_objects(self):
@@ -91,9 +87,8 @@ class World():
         """
         Пробегаем по полю и собираем с каждой клетки словари ноавх и устаревших объектов
         """
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for key in ('new', 'obsolete'):
-                    changes = self.fields[row][col].change_field_objects[key]
-                    if changes:
-                        self.change_scene[key].extend(changes)
+        for field in self.fields.values():
+            for key in ('new', 'obsolete'):
+                changes = field.change_field_objects[key]
+                if changes:
+                    self.change_scene[key].extend(changes)

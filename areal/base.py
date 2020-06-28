@@ -4,9 +4,9 @@ from areal import constants as cn
 
 class WorldBase:
 
-    def __init__(self, hvn):
+    def __init__(self, hvn, sim_dir):
         self.hvn = hvn
-        base = os.path.join(self.hvn.sim_dir, 'world.db')
+        base = os.path.join(sim_dir, 'world.db')
         self.conn = sqlite3.connect(base)
         self.c = self.conn.cursor()
         self.obj_type_associations = {'plant': {'new': self.insert_plant, 'obsolete':self.plant_death},
@@ -59,6 +59,8 @@ class WorldBase:
             field_id TEXT NOT NULL, 
             birth INTEGER, 
             death INTEGER DEFAULT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
             FOREIGN KEY (field_id) REFERENCES fields (field_id),
             FOREIGN KEY (birth) REFERENCES time (tick_id)
             FOREIGN KEY (death) REFERENCES time (tick_id)
@@ -69,6 +71,8 @@ class WorldBase:
             field_id TEXT NOT NULL, 
             birth INTEGER, 
             death INTEGER DEFAULT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
             FOREIGN KEY (field_id) REFERENCES fields (field_id),
             FOREIGN KEY (birth) REFERENCES time (tick_id)
             FOREIGN KEY (death) REFERENCES time (tick_id)
@@ -79,6 +83,8 @@ class WorldBase:
             field_id TEXT NOT NULL, 
             birth INTEGER, 
             death INTEGER DEFAULT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
             FOREIGN KEY (field_id) REFERENCES fields (field_id),
             FOREIGN KEY (birth) REFERENCES time (tick_id)
             FOREIGN KEY (death) REFERENCES time (tick_id)
@@ -125,11 +131,10 @@ class WorldBase:
             for obj in self.hvn.world.change_scene[pool]:
                 func = self.obj_type_associations[obj.name][pool]
                 func(obj)
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for obj in self.hvn.world.fields[row][col].objects:
-                    func = self.obj_type_associations_in_field[obj.name]
-                    func(obj)
+        for field in self.hvn.world.fields.values():
+            for obj in field.objects:
+                func = self.obj_type_associations_in_field[obj.name]
+                func(obj)
 
     def insert_params(self, params):
         self.c.execute("""INSERT INTO parameters (sim_id,
@@ -149,19 +154,19 @@ class WorldBase:
 
 
     def insert_time(self):
-        self.tick_id = self.hvn.world.global_time + 1_000_000 * self.hvn.sim_number
+        self.tick_id = self.hvn.world.global_time + 1_000_000 * self.hvn.SIM_NUMBER
         self.c.execute('INSERT INTO time (tick_id, tick, sim_id) VALUES (?, ?, ?)',
-                       (self.tick_id, self.hvn.world.global_time, self.hvn.sim_number))
+                       (self.tick_id, self.hvn.world.global_time, self.hvn.SIM_NUMBER))
 
     def insert_field(self, field):
         self.c.execute('INSERT OR REPLACE INTO fields (field_id, row, col) VALUES (?, ?, ?)', (field.id, field.row, field.col))
 
     def insert_plant(self, plant):
-        self.c.execute('INSERT INTO plants (plant_id, field_id, birth) VALUES (?, ?, ?)',
-                       (plant.id, plant.field.id, self.tick_id))
+        self.c.execute('INSERT INTO plants (plant_id, field_id, birth, x, y) VALUES (?, ?, ?, ?, ?)',
+                       (plant.id, plant.field.id, self.tick_id, plant.x, plant.y))
 
     def update_plant_mass(self, plant):
-        self.c.execute("""INSERT INTO  plant_mass (plant_id, tick_id, mass, all_energy) VALUES (?, ?, ?, ?)""",
+        self.c.execute('INSERT INTO  plant_mass (plant_id, tick_id, mass, all_energy) VALUES (?, ?, ?, ?)',
                        (plant.id, self.tick_id, plant.mass, plant.all_energy))
 
     def plant_death(self, plant):
@@ -169,7 +174,8 @@ class WorldBase:
 
 
     def insert_seed(self, seed):
-        self.c.execute('INSERT INTO seeds (seed_id, field_id, birth) VALUES (?, ?, ?)', (seed.id, seed.field.id, self.tick_id))
+        self.c.execute('INSERT INTO seeds (seed_id, field_id, birth, x, y) VALUES (?, ?, ?, ?, ?)',
+                       (seed.id, seed.field.id, self.tick_id, seed.x, seed.y))
 
     def seed_pass(self, seed):
         pass
@@ -179,8 +185,8 @@ class WorldBase:
 
 
     def insert_rot(self, rot):
-        self.c.execute('INSERT INTO rot (rot_id, field_id, birth) VALUES (?, ?, ?)',
-                       (rot.id, rot.field.id, self.tick_id))
+        self.c.execute('INSERT INTO rot (rot_id, field_id, birth, x, y) VALUES (?, ?, ?, ?, ?)',
+                       (rot.id, rot.field.id, self.tick_id, rot.x, rot.y))
 
     def update_rot_mass(self, rot):
         self.c.execute("""INSERT INTO  rot_mass (rot_id, tick_id, mass) VALUES (?, ?, ?)""",

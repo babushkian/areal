@@ -17,9 +17,9 @@ class Plant(Plant_proto):
     EPSILON = 0.3
 
 
-    def __init__(self,  field, sx, sy):
+    def __init__(self,  field, x, y):
         self.name = 'plant'
-        super().__init__(field, sx, sy)
+        super().__init__(field, x, y)
         self.mass = cn.SEED_MASS
         self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
         self.field.plants[self.id] = self
@@ -65,7 +65,7 @@ class Plant(Plant_proto):
 
     def die(self):
         self.count_down()
-        Rot(self.field, self.sx, self.sy, self.all_energy)
+        Rot(self.field, self.x, self.y, self.all_energy)
         del self.field.plants[self.id]
 
 

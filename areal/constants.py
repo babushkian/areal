@@ -28,7 +28,7 @@ MONTHS = 24  # кличество тиков в одном году. позво�
 MAX_WIDNDOW = 720 # максимальнный линейный размер игрового поля в пикселях
 PHYS_SIZE = 100  # физические размеры игрового поля: +- 100 по обоим координатам
 FIELD_SIZE_PIXELS = 128  # размер одной клетки в пикселях
-FIELDS_NUMBER_BY_SIDE = 15 # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
+FIELDS_NUMBER_BY_SIDE = 5 # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
 
 
 
@@ -39,7 +39,7 @@ def define_delay():
                      * int(FIELDS_NUMBER_BY_SIDE * FIELDS_NUMBER_BY_SIDE /16)
     return AFTER_COOLDOWN
 
-SIMULATION_PERIOD = 5  # количество лет, по истечении которых симуляция завершается
+SIMULATION_PERIOD = 20  # количество лет, по истечении которых симуляция завершается
 
 
 
@@ -112,9 +112,9 @@ TOTAL_SEED_MASS = SEED_MASS + PLANT_HIDDEN_MASS
 PLANT_MAX_MASS = 30
 
 # логирование
-WRITE_FIELDS_INFO = True
-WRITE_PLANTS_INFO = True
-WRITE_WORLD_INFO = True
+WRITE_FIELDS_INFO = False
+WRITE_PLANTS_INFO = False
+WRITE_WORLD_INFO = False
 plant_header = 'time\tID\tpmalnt coords\tage\tmass\ttotal food consumed\tfood to live\t food to grow\t food ability\tget food\tmass delta\tsoil in field\n'
 fiend_header = 'global time\tcoordinates\tplants\trot\tseeds\tbiomass\trot mass\tseeds mass\tsoil\ttotal mass\n'
 world_header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\trot\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'

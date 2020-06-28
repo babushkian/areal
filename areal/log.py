@@ -4,7 +4,7 @@ from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 class Log:
-    def __init__(self, hvn):
+    def __init__(self, hvn, sim_dir):
         self.hvn = hvn
         self.logfile_associations = {'every_plant_life': self.log_plants,
                              'fields_info': self.log_fields,
@@ -13,7 +13,7 @@ class Log:
         suffix = self.file_suffix()
         for action, name, header in cn.LOGGING:
             if action:
-                fname = os.path.join(self.hvn.sim_dir, f'{name}_{suffix}.csv')
+                fname = os.path.join(sim_dir, f'{name}_{suffix}.csv')
                 f = open(fname, 'w', encoding='UTF16')
                 f.write(header)
                 self.log_functions[f] = self.logfile_associations[name]
@@ -29,15 +29,13 @@ class Log:
         file.write(s.replace('.', ','))
 
     def log_fields(self, file):
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                file.write(self.hvn.world.fields[row][col].write_info())
+        for field in self.hvn.world.fields.values():
+            file.write(field.write_info())
 
     def log_plants(self, file):
-        for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-            for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for plant in self.hvn.world.fields[row][col].plants.values():
-                    file.write(plant.info())
+        for field in self.hvn.world.fields.values():
+            for plant in field.plants.values():
+                file.write(plant.info())
 
     @staticmethod
     def file_suffix():
@@ -62,23 +60,7 @@ class Log:
             if not file.closed:
                 file.close()
 
-    @staticmethod
-    def population_metric_head(file):
-        s = 'dimension\t'
-        s += 'end date\t'
-        s += 'soil on tile\t'
-        s += 'grow up condition\t'
-        s += 'prohibited grow up period\t'
-        s += 'seed life\t'
-        s += 'seed mass\t'
-        s += 'plant life\t'
-        s += 'plant mass\t'
-        s += 'plants number\t'
-        s += 'seeds number\t'
-        s += 'grow up seeds percent\t'
-        s += 'total plant enetgy\t'
-        s += 'total soil flow\n'
-        file.write(s)
+
 
     def population_metric_record(self, file):
         s = list()
@@ -101,3 +83,20 @@ class Log:
         string=string.replace('.', ',')
         file.write(string)
 
+
+def population_metric_head(file):
+    s = 'dimension\t'
+    s += 'end date\t'
+    s += 'soil on tile\t'
+    s += 'grow up condition\t'
+    s += 'prohibited grow up period\t'
+    s += 'seed life\t'
+    s += 'seed mass\t'
+    s += 'plant life\t'
+    s += 'plant mass\t'
+    s += 'plants number\t'
+    s += 'seeds number\t'
+    s += 'grow up seeds percent\t'
+    s += 'total plant enetgy\t'
+    s += 'total soil flow\n'
+    file.write(s)
