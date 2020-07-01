@@ -3,7 +3,7 @@
 RANDOM_ON = True
 RANDOM_SEED = 'banana'
 
-GRAPHICS = False # будет ли отображаться симуляция на экране
+GRAPHICS = True # будет ли отображаться симуляция на экране
 
 GRAPH_PLANT = True
 GRAPH_SEED = True

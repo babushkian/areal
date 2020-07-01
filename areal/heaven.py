@@ -14,11 +14,12 @@ METRIC_FILE = None
 
 class Heaven:
     SIM_NUMBER = 0
-    def __init__(self, app):
+    def __init__(self, frame, app):
         self.app = app
+        self.frame = frame
         self.world = World()
         if cn.GRAPHICS:
-            self.graph = GW()
+            self.graph = GW(self)
         else:
             self.graph = None
         self.db = None
@@ -64,6 +65,9 @@ class Heaven:
         self.db.insert_time()
         self.logging = Log(self, SIM_DIR)
         self.world.init_sim()
+        if cn.GRAPHICS:
+            self.graph.init_sim()
+
         for field in self.world.fields.values():
             self.db.insert_field(field)
         self.db.db_write()

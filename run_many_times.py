@@ -2,48 +2,46 @@ from tkinter import *
 import os
 import time
 from areal import graphics
-from areal import world
+from areal import heaven
 from areal import constants as cn
 from areal import draw_fig
 
 EXIT = False # пр нажатии на эсекйп становится истиной и происходит выход из симуляции
 
 class App(Tk):
-    def __init__(self, sim_dir, img_dir, metr):
+    def __init__(self):
         super().__init__()
         self.series = True # серия симуляций
         self.sim_state = True
-        self.sim_dir = sim_dir
-        self.img_dir = img_dir
-        self.metr_file = metr
+
 
         self.bind('<Escape>', self.cancel_sim)
-        self.canv = graphics.GW(self, self)
-        if os.path.getsize(self.metr_file.name) == 0:
-            self.canv.wld.population_metric_head(self.metr_file)
+        self.hvn = heaven.Heaven(self, self) #parent(фрейм,куда будет встроен холст), app
+        self.hvn.init_sim()
+        self.hvn.update()
         self.update_a()
-        self.canv.init_sim()
-        self.canv.update_a()
+
 
     def update_a(self):
-        if self.canv.game_over:
-            self.draw_figure()
+        if self.hvn.game_over:
+            #self.draw_figure()
             self.destroy()
         else:
             self.after(10, self.update_a)
+            self.hvn.update()
 
     def draw_figure(self):
-        for file in self.canv.wld.log_functions:
+        for file in self.hvn.logging.log_functions:
             draw_fig.draw_pic(os.path.abspath(file.name), self.img_dir)
 
     def is_draw(self, obj):
-        return False
+        return True
 
     def cancel_sim(self, event = None):
         global EXIT
         if event:
             EXIT = True
-        del self.canv
+        del self.hvn
         self.destroy()
 
 if __name__ == '__main__':
@@ -57,13 +55,8 @@ if __name__ == '__main__':
     progib = [0]
     life = [7]
 
-    cur_date = time.time()
-    sim_dir = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))
-    os.mkdir(sim_dir)
-    img_dir = os.path.join(sim_dir, 'figures')
-    os.mkdir(img_dir)
-    metr = os.path.join(sim_dir, 'metric.csv')
-    metr = open(metr, 'w', encoding='UTF16')
+    heaven.init_sim_dir()
+    heaven.init_metric()
     for v in soil:
         cn.INIT_SOIL = v
         for x in condit:
@@ -72,7 +65,7 @@ if __name__ == '__main__':
                 cn.SEED_PROHIBITED_GROW_UP = y
                 for z in life:
                     cn.SEED_LIFE = z
-                    win = App(sim_dir, img_dir, metr)
+                    win = App()
                     win.mainloop()
                     if EXIT:
                         break

@@ -5,11 +5,13 @@ from areal import constants as cn
 from areal.label import CanvasTooltip
 
 class GW(Canvas):
-    def __init__(self, parent, app):
-        super().__init__(parent, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
+    def __init__(self, hvn):
+        self.hvn = hvn
+        self.app = self.hvn.app
+
+        super().__init__(self.hvn.frame, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
         self.pack()
-        self.app = app
-        self.hvn = app.hvn
+
         self.is_draw = None
         self.show_end = False # выводилась ли надпись об окончании игры
         self.fields = dict() # сожержит кортежи из объекта клетки на экране и объекта всплывающей подсказки к этой клетке
@@ -17,7 +19,6 @@ class GW(Canvas):
         self.objects_on_screen = dict() # ключ: объект, который надо нарисовать, значение номер объекта на холсте
 
     def init_sim(self):
-        self.hvn.world.init_sim()
         self.is_draw = self.draw_or_not() # какие из элементов симуляции рисуются
         self.create_fields()
         self.create_objects()
@@ -31,29 +32,28 @@ class GW(Canvas):
         return d
 
     def create_fields(self):
-        if self.is_draw('field'):
+        if self.is_draw['field']:
             cd = cn.FIELD_SIZE_PIXELS
-            for row in range(cn.FIELDS_NUMBER_BY_SIDE):
-                for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                    field = self.hvn.world.fields[row][col]
-                    shape = self.create_rectangle(cd * row, cd * col,
-                                                      cd * row + cd, cd * col + cd,
-                                                      width=0, fill='#888888', tags = field.name)
-                    tooltip = CanvasTooltip(self, shape, text=self.create_tooltip_text(field))
-                    self.fields[field] = (shape, tooltip)
+            for field in self.hvn.world.fields.values():
+                shape = self.create_rectangle(cd * field.row, cd * field.col,
+                                                  cd * field.row + cd, cd * field.col + cd,
+                                                  width=0, fill='#888888', tags = field.name)
+                tooltip = CanvasTooltip(self, shape, text=self.create_tooltip_text(field))
+                self.fields[field] = (shape, tooltip)
 
     def create_objects(self):
         for o in self.hvn.world.change_scene['new']:
-            if self.is_draw(o.name):
+            if self.is_draw[o.name]:
                 (size, color, border) = cn.DRAW_PARAMS[o.name].values()
                 being =  self.create_rectangle(o.sx - size, o.sy - size,
                                                o.sx + size, o.sy + size,
                                                fill=color, width=border, tags=o.name)
                 self.objects_on_screen[o] = being
 
+
     def delete_objects(self):
         for o in self.hvn.world.change_scene['obsolete']:
-            if self.is_draw(o.name):
+            if self.is_draw[o.name]:
                 self.delete(self.objects_on_screen[o])
 
     def update_objects(self):
@@ -71,14 +71,15 @@ class GW(Canvas):
                 t = 99
             return f'gray{t}'
 
-        if self.is_draw('field'):
+        if self.is_draw['field']:
             for field in self.fields: # итерация по объектам клеток
                 back = soil_color(field) # объект клетки к качестве параметра
                 self.itemconfigure(self.fields[field][0], fill=back)
                 self.fields[field][1].text = self.create_tooltip_text(field) #подсказка привязанная к клетке
 
     def update_a(self):
-        self.hvn.world.update()
+        print('=====================')
+        print(self.objects_on_screen)
         self.update_fields()
         self.update_objects()
         self.tag_raise('plant')
@@ -88,9 +89,9 @@ class GW(Canvas):
         self.show_end = True
         if cn.GRAPHICS:
             bigfont = font.Font(family='arial', size=20, weight="bold")
-            if self.time_over:
+            if self.hvn.time_over:
                 self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')
-            if self.perish:
+            if self.hvn.perish:
                 self.create_text(360, 400, text='ПОПУЛЯЦИЯ ВЫМЕРЛА', font=bigfont, fill='blue')
 
 
