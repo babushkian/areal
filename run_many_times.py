@@ -1,5 +1,6 @@
 from tkinter import *
 import os
+import random
 import time
 from areal import graphics
 from areal import heaven
@@ -16,6 +17,8 @@ class App(Tk):
 
 
         self.bind('<Escape>', self.cancel_sim)
+        if not cn.RANDOM_ON:
+            random.seed(cn.RANDOM_SEED)
         self.hvn = heaven.Heaven(self, self) #parent(фрейм,куда будет встроен холст), app
         self.hvn.init_sim()
         self.hvn.update()

@@ -20,6 +20,7 @@ class GW(Canvas):
 
     def init_sim(self):
         self.is_draw = self.draw_or_not() # какие из элементов симуляции рисуются
+        self.get_draw_and_delete_objects()
         self.create_fields()
         self.create_objects()
         self.newborn = False
@@ -42,7 +43,7 @@ class GW(Canvas):
                 self.fields[field] = (shape, tooltip)
 
     def create_objects(self):
-        for o in self.hvn.world.change_scene['new']:
+        for o in self.draw_and_delete['new'].values():
             if self.is_draw[o.name]:
                 (size, color, border) = cn.DRAW_PARAMS[o.name].values()
                 being =  self.create_rectangle(o.sx - size, o.sy - size,
@@ -52,17 +53,35 @@ class GW(Canvas):
 
 
     def delete_objects(self):
-        for o in self.hvn.world.change_scene['obsolete']:
-            if self.is_draw[o.name]:
-                self.delete(self.objects_on_screen[o])
+        for obj in self.draw_and_delete['obsolete'].values():
+            if self.draw_and_delete['new'].get(obj.id):
+                del self.draw_and_delete['new'][obj.id]
+            else:
+                if self.is_draw[obj.name]:
+                    self.delete(self.objects_on_screen[obj])
+                    del self.objects_on_screen[obj]
 
     def update_objects(self):
+        # обьекты так обрабатывабтся, что когда дело доходит до их отрисовки оним могут попасть в списки для
+        # прорисовки и для удаления. Это происходит, когда растение отбрасываетс семечко, а оно на благоприятной
+        # почве стразу прорастает. И так получается, что объект семечки создался и тут же уничтожился. И таким
+        # образом попал в оба списка. Та как у меня сначала уничтожаются устаревшие объекты, то на уничтожение
+        # отправляются объекты, которые не были нарисованы. Поэтому надо проверять - если объект попал в оба
+        # списка, он просто удаляется из списка на прорисовку в методе удаления нарисованных объектов.
+        self.get_draw_and_delete_objects()
         self.delete_objects()
         self.create_objects()
         for obj in self.objects_on_screen:
             if obj.name == 'plant':
                 color = cn.SICK_PLANT_COLOR if obj.delta < 0 else cn.FRESH_PLANT_COLOR
                 self.itemconfig(self.objects_on_screen[obj], fill=color)
+
+    def get_draw_and_delete_objects(self):
+        self.draw_and_delete = {'new': dict(), 'obsolete': dict()}
+        for category in self.draw_and_delete:
+            for i in self.hvn.world.change_scene[category]:
+                self.draw_and_delete[category][i.id] = i
+
 
     def update_fields(self):
         def soil_color(field):
@@ -78,8 +97,6 @@ class GW(Canvas):
                 self.fields[field][1].text = self.create_tooltip_text(field) #подсказка привязанная к клетке
 
     def update_a(self):
-        print('=====================')
-        print(self.objects_on_screen)
         self.update_fields()
         self.update_objects()
         self.tag_raise('plant')
