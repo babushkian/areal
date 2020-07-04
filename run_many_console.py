@@ -21,7 +21,7 @@ if __name__ == '__main__':
                 cn.SEED_PROHIBITED_GROW_UP = y
                 for z in life:
                     cn.SEED_LIFE = z
-                    w = heaven.Heaven(None)
+                    w = heaven.Heaven(None, None)
                     w.init_sim()
                     while not w.game_over:
                         w.update()

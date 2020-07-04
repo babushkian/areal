@@ -24,6 +24,7 @@ class Heaven:
             self.graph = None
         self.db = None
         Heaven.SIM_NUMBER += 1
+        self.calculated = False # признак, что новое состояние посчиталось и его можно выводить на экран
         self.game_over = False
         self.time_over = False
         self.perish = False
@@ -74,23 +75,29 @@ class Heaven:
 
 
     def update(self):
-        self.world.time_pass()
-        self.db.insert_time()
-        self.world.update()
-        self.db.db_write()
-        self.living_beings = Plant.COUNT + Seed.COUNT # проверяем, есть кто живой на карте
+        if not self.calculated or not cn.GRAPHICS:
+            self.world.time_pass()
+            self.db.insert_time()
+            self.world.update()
 
-        self.statistics() # изменить двойной цикл по клеткам на одинарный
-        self.logging.write()
-        if self.world.global_time % (3*cn.MONTHS) == 0:
-            self.db.commit()
-        self.check_end_of_simulation()
-        if not self.game_over:
-            if cn.GRAPHICS and self.app.sim_state:
-                self.graph.update_a()
-        else:
-            self.end_of_simulation()
+            self.db.db_write()
+            self.living_beings = Plant.COUNT + Seed.COUNT # проверяем, есть кто живой на карте
 
+            self.statistics() # изменить двойной цикл по клеткам на одинарный
+            self.logging.write()
+            if self.world.global_time % (3*cn.MONTHS) == 0:
+                self.db.commit()
+            self.calculated = True
+            self.check_end_of_simulation()
+            """
+            if not self.game_over:
+                if cn.GRAPHICS and self.app.sim_state:
+                    self.graph.update_a()
+            else:
+                self.end_of_simulation()
+            """
+            if self.game_over:
+                self.end_of_simulation()
 
     def check_end_of_simulation(self):
         if not self.world.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:

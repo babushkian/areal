@@ -8,6 +8,7 @@ class GW(Canvas):
     def __init__(self, hvn):
         self.hvn = hvn
         self.app = self.hvn.app
+        self.update_event = None
 
         super().__init__(self.hvn.frame, width=cn.WIDTH, heigh=cn.HEIGHT, bg='gray50')
         self.pack()
@@ -25,6 +26,8 @@ class GW(Canvas):
         self.create_objects()
         self.newborn = False
         self.delay = cn.define_delay()
+        self.update_event = self.after(self.delay, self.update_a)
+
 
     def draw_or_not(self):
         d = dict()
@@ -97,9 +100,12 @@ class GW(Canvas):
                 self.fields[field][1].text = self.create_tooltip_text(field) #подсказка привязанная к клетке
 
     def update_a(self):
-        self.update_fields()
-        self.update_objects()
-        self.tag_raise('plant')
+        if self.hvn.calculated:
+            self.update_fields()
+            self.update_objects()
+            self.tag_raise('plant')
+            self.hvn.calculated = False
+        self.update_event = self.after(self.delay, self.update_a)
 
 
     def display_end_of_simulation(self):
