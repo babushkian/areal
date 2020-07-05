@@ -81,14 +81,21 @@ class World():
         self.gather_changed_objects()
 
     def drop_changed_objects(self):
-        self.change_scene = {'new': [], 'obsolete': []}
+        self.change_scene = {'new': dict(), 'obsolete': dict()}
 
     def gather_changed_objects(self):
-        """
-        Пробегаем по полю и собираем с каждой клетки словари ноавх и устаревших объектов
-        """
         for field in self.fields.values():
             for key in ('new', 'obsolete'):
                 changes = field.change_field_objects[key]
                 if changes:
-                    self.change_scene[key].extend(changes)
+                    self.change_scene[key].update(changes)
+        # удаляем объектв, которые в течении одного такта успрели родиться и исчезнуть
+        # это семена, сброшенные в те клетки, которые еще не успели обработаться
+        del_list = list(self.change_scene['obsolete'])
+        if del_list:
+            for obj_id in del_list:
+                if self.change_scene['new'].get(obj_id):
+                    del self.change_scene['new'][obj_id]
+                    del self.change_scene['obsolete'][obj_id]
+
+

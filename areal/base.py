@@ -128,7 +128,7 @@ class WorldBase:
 
     def db_write(self):
         for pool in['new', 'obsolete']:
-            for obj in self.hvn.world.change_scene[pool]:
+            for obj in self.hvn.world.change_scene[pool].values():
                 func = self.obj_type_associations[obj.name][pool]
                 func(obj)
         for field in self.hvn.world.fields.values():

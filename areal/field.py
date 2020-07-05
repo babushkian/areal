@@ -28,12 +28,12 @@ class Field:  # клетка поля
         self.to_breed = list() # растения, готовые к размножению
         self.rot = dict() # гниль на клетке
         self.seeds = dict() # семена на клетке
-        self.objects = list()
+        self.objects = list() # излишняя, нужно удалить, используется для записи объектов на клетек в базу
         self.seed_mass =0
         self.plant_mass = 0
         self.rot_mass = 0
         self.plant_ration = 0 # сколько можно скормить каждому растению за ход
-        self.change_field_objects = {'new': [], 'obsolete': []}
+        self.change_field_objects = {'new': dict(), 'obsolete': dict()}
         self.soil = soil
         # физические координаты поля: его центра и краев
         self.center_x, self.center_y = Plant_proto.graph_to_phys(row, col)
@@ -79,8 +79,8 @@ class Field:  # клетка поля
         Seed(self, x, y, seed_mass)
 
     def update(self):
-        self.change_field_objects = {'new': [], 'obsolete': []}
-        self.objects = list()
+        self.change_field_objects = {'new': dict(), 'obsolete': dict()}
+        self.objects = list()  # излишняя, нужно удалить,
 
     def update_rot(self):
         rot_list = list(self.rot)
@@ -108,7 +108,7 @@ class Field:  # клетка поля
 
     def update_objs(self):
         for i in (self.plants,self.seeds, self.rot):
-            self.objects.extend(i.values())
+            self.objects.extend(i.values())  # излишняя, нужно удалить,
 
     def breed_plants(self):
         for p in self.to_breed:
@@ -125,10 +125,10 @@ class Field:  # клетка поля
         return self.area[random.randrange(l)]
 
     def add_to_new_pool(self, obj):
-        self.change_field_objects['new'].append(obj)
+        self.change_field_objects['new'][obj.id] = obj
 
     def add_to_obsolete_pool(self, obj):
-        self.change_field_objects['obsolete'].append(obj)
+        self.change_field_objects['obsolete'][obj.id] = obj
 
     def info(self):
         self.starving = 0

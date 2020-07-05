@@ -53,10 +53,10 @@ if __name__ == '__main__':
     progib = [0, 0.5, 1.5, 3]
     life = [1, 3, 5, 7]
 
-    soil = [240]
-    condit = [40]
+    soil = [280, 360]
+    condit = [20]
     progib = [0]
-    life = [7]
+    life = [3, 7]
 
     heaven.init_sim_dir()
     heaven.init_metric()

@@ -4,7 +4,7 @@ from areal import heaven
 
 heaven.init_sim_dir()
 heaven.init_metric()
-w = heaven.Heaven(None)
+w = heaven.Heaven(None, None)
 w.init_sim()
 while not w.game_over:
     w.update()

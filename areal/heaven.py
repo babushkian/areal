@@ -89,13 +89,6 @@ class Heaven:
                 self.db.commit()
             self.calculated = True
             self.check_end_of_simulation()
-            """
-            if not self.game_over:
-                if cn.GRAPHICS and self.app.sim_state:
-                    self.graph.update_a()
-            else:
-                self.end_of_simulation()
-            """
             if self.game_over:
                 self.end_of_simulation()
 
