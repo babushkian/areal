@@ -89,7 +89,7 @@ class World():
                 changes = field.change_field_objects[key]
                 if changes:
                     self.change_scene[key].update(changes)
-        # удаляем объектв, которые в течении одного такта успрели родиться и исчезнуть
+        # удаляем объекты, которые в течении одного такта успели родиться и исчезнуть
         # это семена, сброшенные в те клетки, которые еще не успели обработаться
         del_list = list(self.change_scene['obsolete'])
         if del_list:

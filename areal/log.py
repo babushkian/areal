@@ -73,14 +73,15 @@ class Log:
         s.append(str(cn.SEED_MASS))
         s.append(str(cn.PLANT_LIFETIME_YEARS))
         s.append(str(cn.PLANT_MAX_MASS))
-        #s.append(str(self.hvn.sign_plant_num))
-        #s.append(str(self.sign_seeds_born))
-        #s.append(f'{(self.sign_seeds_grow_up /self.sign_seeds_born *100 if self.sign_seeds_born > 0 else 0 ):4.1f}')
-        #s.append(f'{self.sign_plant_mass_energy:10.0f}')
-        #s.append(f'{self.soil_flow:10.0f}')
+        s.append(str(self.hvn.sign_plant_num))
+        s.append(str(self.hvn.sign_seeds_born))
+        s.append(f'{self.hvn.sign_rot_amount:10.1f}')
+        s.append(f'{(self.hvn.sign_seeds_grow_up /self.hvn.sign_seeds_born *100 if self.hvn.sign_seeds_born > 0 else 0 ):4.1f}')
+        s.append(f'{self.hvn.sign_plant_mass_integral:10.1f}')
+        s.append(f'{self.hvn.soil_flow:10.1f}')
         s.append('\n')
         string = '\t'.join(s)
-        string=string.replace('.', ',')
+        string = string.replace('.', ',')
         file.write(string)
 
 
@@ -96,7 +97,8 @@ def population_metric_head(file):
     s += 'plant mass\t'
     s += 'plants number\t'
     s += 'seeds number\t'
+    s += 'rot amount\t'
     s += 'grow up seeds percent\t'
-    s += 'total plant enetgy\t'
+    s += 'integral_plant_mass\t'
     s += 'total soil flow\n'
     file.write(s)

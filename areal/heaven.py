@@ -35,11 +35,13 @@ class Heaven:
         self.plant_mass = 0
         self.rot_mass = 0
         self.soil_mass = 0 # полная масса системы: почва растения, семена и гниль
-        self.sign_plant_num = 0
+        # метрики
+        self.sign_plant_num = 0 # кличество растений, рожденных за время симуляции
+        self.sign_seeds_born = 0 # количество семян за время симуляции
+        self.sign_rot_amount = 0 # коичество гнили за время симуляции, показывает оборот биомассы
+        self.sign_seeds_grow_up = 0 # количество семян, проросших за время симуляции
         self.sign_plant_mass_energy = 0
         self.sign_plant_mass_integral = 0
-        self.sign_seeds_born = 0
-        self.sign_seeds_grow_up = 0
         self.soil_flow = 0# МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции
         self.living_beings = 0
 
@@ -83,7 +85,7 @@ class Heaven:
             self.db.db_write()
             self.living_beings = Plant.COUNT + Seed.COUNT # проверяем, есть кто живой на карте
 
-            self.statistics() # изменить двойной цикл по клеткам на одинарный
+            self.statistics()
             self.logging.write()
             if self.world.global_time % (3*cn.MONTHS) == 0:
                 self.db.commit()
@@ -128,10 +130,29 @@ class Heaven:
             self.rot_mass += field.rot_mass
             self.starving += field.starving
         self.sign_plant_mass_integral += self.plant_mass
+        self.soil_flow += self.soil_mass
         if self.starving == 0:
             self.starving_percent = 0
         else:
             self.starving_percent = self.starving / Plant.COUNT * 100
+        # вычисление метрик
+        born_plants = 0 # рожденные на этом ходу растения (для вычисления проросших семян)
+        for o in self.world.change_scene['new'].values():
+            if o.name == 'plant':
+                self.sign_plant_num += 1
+                born_plants += 1
+            if o.name == 'seed':
+                self.sign_seeds_born += 1
+            if o.name == 'rot':
+                self.sign_rot_amount += o.all_energy
+        # сколько растений проросло за ход. Часть семян превращается в растения, а часть в гниль.
+        # Смотрим, скольо семян устарело, а сколько растений появилось
+        obsolete_seeds = 0
+        for o in self.world.change_scene['obsolete'].values():
+            if o.name == 'seed':
+                obsolete_seeds += 1
+        self.sign_seeds_grow_up += min(born_plants, obsolete_seeds)
+
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
         self.count_of_world_objects = Plant.COUNT + Seed.COUNT + Rot.COUNT
 

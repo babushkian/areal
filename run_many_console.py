@@ -5,6 +5,7 @@ import time
 from areal import constants as cn
 from areal import heaven
 
+cn.GRAPHICS = False
 
 if __name__ == '__main__':
     soil = [220, 240,]
