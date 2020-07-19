@@ -1,8 +1,8 @@
 from tkinter import *
 import os
+import sys
 import random
-import time
-from areal import graphics
+
 from areal import heaven
 from areal import constants as cn
 from areal import draw_fig
@@ -12,6 +12,7 @@ EXIT = False # пр нажатии на эсекйп становится ист
 class App(Tk):
     def __init__(self):
         super().__init__()
+        self.protocol("WM_DELETE_WINDOW", self.quit)
         self.series = True # серия симуляций
         self.sim_state = True
 
@@ -41,11 +42,17 @@ class App(Tk):
         return True
 
     def cancel_sim(self, event = None):
-        global EXIT
         if event:
-            EXIT = True
+            self.quit()
+
+    def quit(self):
+        global EXIT
+        EXIT = True
+        self.hvn.end_of_simulation()
         del self.hvn
+        print("Удаляем мир и окно")
         self.destroy()
+
 
 if __name__ == '__main__':
     soil = [220, 240, 260, 280]
@@ -69,6 +76,7 @@ if __name__ == '__main__':
                 for z in life:
                     cn.SEED_LIFE = z
                     win = App()
+                    print('Запускаем новую симуляцию')
                     win.mainloop()
                     if EXIT:
                         break

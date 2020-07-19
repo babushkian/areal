@@ -4,7 +4,6 @@ import time
 from tkinter import *
 from areal import constants as cn
 from areal import graphics
-from areal import world
 from areal.help import HelpButton
 from areal.plant import Plant
 from areal.seed import Seed
