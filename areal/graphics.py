@@ -23,7 +23,6 @@ class GW(Canvas):
         self.is_draw = self.draw_or_not() # какие из элементов симуляции рисуются
         self.create_fields()
         self.create_objects()
-        self.newborn = False
         self.delay = cn.define_delay()
         self.update_event = self.after(self.delay, self.update_a)
 
@@ -88,6 +87,8 @@ class GW(Canvas):
                 self.fields[field][1].text = self.create_tooltip_text(field) #подсказка привязанная к клетке
 
     def update_a(self):
+        print('Обновление графики')
+        print(self.hvn.world.global_time)
         if self.hvn.calculated:
             self.update_fields()
             self.update_objects()
@@ -98,7 +99,8 @@ class GW(Canvas):
 
     def display_end_of_simulation(self):
         self.show_end = True
-        self.after_cancel(self.update_event)
+        if self.update_event:
+            self.after_cancel(self.update_event)
         bigfont = font.Font(family='arial', size=20, weight="bold")
         if self.hvn.time_over:
             self.create_text(360, 360, text='НАСТУПИЛА ПРЕДЕЛЬНАЯ ДАТА СИМУЛЯЦИИ', font=bigfont, fill='blue')

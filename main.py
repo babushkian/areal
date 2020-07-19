@@ -2,26 +2,25 @@
 import random
 import time
 from tkinter import *
+
+from areal import heaven
 from areal import constants as cn
-from areal import graphics
 from areal.help import HelpButton
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 
 
+
 class App(Tk):
     def __init__(self):
         super().__init__()
+        self.protocol("WM_DELETE_WINDOW", self.quit)
         self.series = True  # единичная симуляция, а не серия
         self.sim_state = False
-        self.sim_number = 1
-        self.sim_directory()
-        metr = os.path.join(self.sim_dir, 'metric.csv')
-        self.metr_file = open(metr, 'w', encoding='UTF16')
+        self.newborn = True
+        self.world_timer = None # таймер обновления мира
         self.interface_build()
-        #нельзя переносить в world или graphic. потому что файл изаголовок общий для всех симуляций
-        self.canv.wld.population_metric_head(self.metr_file)
         self.bind('<Escape>', self.restart)
         self.bind('<space>', self.start_stop)
         self.bind('<Right>', self.one_step)
@@ -33,7 +32,7 @@ class App(Tk):
         self.minsize(1000, 760)
         self.canvframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.canvframe.pack(side=LEFT)
-        self.canv = graphics.GW(self.canvframe, self)
+        self.canv = heaven.Heaven(self.canvframe, self) #parent(фрейм,куда будет встроен холст)
 
         self.rightframe = Frame(self, relief=GROOVE, borderwidth=2, padx=3, pady=3)
         self.rightframe.pack(side=RIGHT, expand=YES, fill=BOTH)
@@ -50,10 +49,6 @@ class App(Tk):
         self.labelframe = InfoLabels(self.rightframe, self)
         self.buttons = Buttons(self.rightframe, self)
 
-    def sim_directory(self):
-        cur_date = time.time()
-        self.sim_dir = 'sim_' + time.strftime("%d.%m.%Y_%H.%M.%S", time.localtime(cur_date))
-        os.mkdir(self.sim_dir)
 
     def update_a(self):
         self.buttons.update_a()
@@ -62,9 +57,10 @@ class App(Tk):
 
 
     def run(self):
-        if self.canv.newborn:
+        if self.newborn:
             self.canv.init_sim()
-        self.canv.update_a()
+            self.newborn = False
+        self.canv.update()
 
     def one_step(self, event=None):
         self.sim_state = False
@@ -81,28 +77,25 @@ class App(Tk):
                 self.sim_state = False
 
     def restart(self, event=None):
-
         if cn.RANDOM_ON:
             self.entry.config(state=DISABLED)
             self.rand_label.config(text='Генератор истинно случайных чисел.')
         else:
             random.seed(self.random_var.get())
-        self.sim_number += 1
         self.sim_state = False
         self.chbox.enable_checkbutton()
-        if not self.canv.newborn:
-            self.canv.wld.db.close_connection()
-            self.canv.destroy()
-            self.canv = graphics.GW(self.canvframe, self)
+        if not self.newborn:
+            self.canv.end_of_simulation()
+            self.canv = heaven.Heaven(self.canvframe, self)
 
     def is_draw(self, objname):
         return self.chbox.is_draw(objname)
 
     def quit(self):
         self.canv.end_of_simulation()
-        #self.canv.wld.logging_close()
+        del self.canv
+        print("Удаляем мир и окно")
         self.destroy()
-
 
 class Checkers(Frame):
     CHECKBOX_TEXT = {'plant': 'рисотвать растения    ',
@@ -159,18 +152,18 @@ class InfoLabels(Frame):
             self.labels.append(a)
 
     def update_a(self):
-        if self.app.canv.wld.world_mass == 0:
+        if self.app.canv.world_mass == 0:
             plant_percent = seed_percent = rot_percent = soil_percent = 0
             #print("ZERO")
         else:
-            plant_percent = self.app.canv.wld.plant_mass / self.app.canv.wld.world_mass * 100
-            seed_percent = self.app.canv.wld.seed_mass / self.app.canv.wld.world_mass * 100
-            rot_percent = self.app.canv.wld.rot_mass / self.app.canv.wld.world_mass * 100
-            soil_percent = self.app.canv.wld.soil_mass / self.app.canv.wld.world_mass * 100
+            plant_percent = self.app.canv.plant_mass / self.app.canv.world_mass * 100
+            seed_percent = self.app.canv.seed_mass / self.app.canv.world_mass * 100
+            rot_percent = self.app.canv.rot_mass / self.app.canv.world_mass * 100
+            soil_percent = self.app.canv.soil_mass / self.app.canv.world_mass * 100
 
-        data = (self.app.canv.wld.global_time,
+        data = (self.app.canv.world.global_time,
                 Plant.COUNT,
-                self.app.canv.wld.starving_percent,
+                self.app.canv.starving_percent,
                 Seed.COUNT,
                 Rot.COUNT,
                 plant_percent,
@@ -198,7 +191,7 @@ class Buttons(Frame):
         self.reset_button.pack(side=BOTTOM, expand=YES, fill=X)
 
     def update_a(self):
-        if self.app.canv.newborn:
+        if self.app.newborn:
             self.statrt_button.config(text='СТАРТ')
         elif self.app.sim_state == False:
             self.statrt_button.config(text='ПРОДОЛЖИТЬ')
@@ -215,5 +208,7 @@ class Buttons(Frame):
         self.app.restart()
 
 if __name__ == '__main__':
+    heaven.init_sim_dir()
+    heaven.init_metric()
     win = App()
     win.mainloop()

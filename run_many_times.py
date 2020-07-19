@@ -1,6 +1,5 @@
 from tkinter import *
 import os
-import sys
 import random
 
 from areal import heaven
