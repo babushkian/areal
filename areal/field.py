@@ -143,7 +143,6 @@ class Field:  # клетка поля
         self.seed_mass =0
         for s in self.seeds:
             self.seed_mass += self.seeds[s].all_energy
-        self.write_info()
 
     def write_info(self):
         s = []

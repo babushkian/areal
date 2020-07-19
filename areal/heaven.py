@@ -47,25 +47,9 @@ class Heaven:
 
 
     def init_sim(self):
-        def param_tuple():
-            t = [self.SIM_NUMBER]
-            t.append(cn.FIELDS_NUMBER_BY_SIDE)
-            t.append(cn.SIMULATION_PERIOD)
-            t.append(cn.MAX_PLANTS_IN_FIELD)
-            t.append(cn.INIT_SOIL)
-            t.append(cn.SEED_GROW_UP_CONDITION)
-            t.append(cn.SEED_LIFE)
-            t.append(cn.SEED_PROHIBITED_GROW_UP)
-            t.append(cn.PLANT_LIFETIME_YEARS)
-            t.append(cn.FRUITING_PERIOD)
-            t.append(cn.PLANT_HIDDEN_MASS)
-            t.append(cn.SEED_MASS)
-            t.append(cn.PLANT_MAX_MASS)
-            return tuple(t)
-
         self.db = WorldBase(self, SIM_DIR)
-        self.db.insert_params(param_tuple())
-        self.db.insert_time()
+        self.db.insert_params()
+        #self.db.insert_time()
         self.logging = Log(self, SIM_DIR)
         self.world.init_sim()
         if cn.GRAPHICS:
@@ -79,7 +63,7 @@ class Heaven:
     def update(self):
         if not self.calculated or not cn.GRAPHICS:
             self.world.time_pass()
-            self.db.insert_time()
+            #self.db.insert_time()
             self.world.update()
 
             self.db.db_write()
@@ -108,6 +92,9 @@ class Heaven:
             self.graph.display_end_of_simulation()
         self.logging.population_metric_record(METRIC_FILE)
         METRIC_FILE.flush()
+        metric = (self.sign_plant_num, self.sign_seeds_born, self.sign_rot_amount,
+                  self.sign_seeds_grow_up, self.sign_plant_mass_integral, self.soil_flow)
+        self.db.insert_metric(metric)
         self.db.close_connection()
         self.logging.logging_close()
 

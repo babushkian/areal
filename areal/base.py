@@ -17,14 +17,6 @@ class WorldBase:
                                                 'seed': self.seed_pass,
                                                 'rot': self.update_rot_mass}
 
-        '''
-        self.c.execute('DROP TABLE IF EXISTS parameters')
-        self.c.execute('DROP TABLE IF EXISTS time')
-        self.c.execute('DROP TABLE IF EXISTS fields')
-        self.c.execute('DROP TABLE IF EXISTS soil')
-        self.c.execute('DROP TABLE IF EXISTS plants')
-        self.c.execute('DROP TABLE IF EXISTS plant_mass')
-        '''
         self.c.execute('PRAGMA foreign_keys=on')
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS parameters (
@@ -40,7 +32,15 @@ class WorldBase:
             fruiting_period REAL NOT NULL, 
             hidden_mass REAL, 
             seed_mass REAL NOT NULL, 
-            max_plant_mass REAL NOT NULL)""")
+            max_plant_mass REAL NOT NULL,
+            plant_number INTEGER,
+            seeds_number INTEGER,
+            rot_amount REAL,
+            seeds_grow_up INTEGER,
+            plant_mass_integral REAL, 
+            soil_flow REAL
+            )""")
+
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS time (
             tick_id INTEGER PRIMARY KEY, 
@@ -127,6 +127,13 @@ class WorldBase:
         self.conn.close()
 
     def db_write(self):
+        '''
+        Главная функция, которая записывает сосотяние поля в базу
+        Добавляет новые объекты
+        Добавляет для устаревших объектов дату смерти
+        Обновляет сведения о массах растений и гнили
+        '''
+        self.insert_time()
         for pool in['new', 'obsolete']:
             for obj in self.hvn.world.change_scene[pool].values():
                 func = self.obj_type_associations[obj.name][pool]
@@ -136,7 +143,22 @@ class WorldBase:
                 func = self.obj_type_associations_in_field[obj.name]
                 func(obj)
 
-    def insert_params(self, params):
+    def insert_params(self):
+        def param_tuple():
+            t = [self.hvn.SIM_NUMBER]
+            t.append(cn.FIELDS_NUMBER_BY_SIDE)
+            t.append(cn.SIMULATION_PERIOD)
+            t.append(cn.MAX_PLANTS_IN_FIELD)
+            t.append(cn.INIT_SOIL)
+            t.append(cn.SEED_GROW_UP_CONDITION)
+            t.append(cn.SEED_LIFE)
+            t.append(cn.SEED_PROHIBITED_GROW_UP)
+            t.append(cn.PLANT_LIFETIME_YEARS)
+            t.append(cn.FRUITING_PERIOD)
+            t.append(cn.PLANT_HIDDEN_MASS)
+            t.append(cn.SEED_MASS)
+            t.append(cn.PLANT_MAX_MASS)
+            return tuple(t)
         self.c.execute("""INSERT INTO parameters (sim_id,
                                             dimension, 
                                             sim_period, 
@@ -150,8 +172,17 @@ class WorldBase:
                                             hidden_mass, 
                                             seed_mass, 
                                             max_plant_mass) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (params))
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (param_tuple()))
 
+    def insert_metric(self, metric):
+        self.c.execute("""UPDATE parameters  SET   
+                                plant_number  = (?),
+                                seeds_number  = (?),
+                                rot_amount = (?), 
+                                seeds_grow_up  = (?),
+                                plant_mass_integral = (?),  
+                                soil_flow = (?) 
+                                WHERE sim_id = (?)""",  (*metric, self.hvn.SIM_NUMBER))
 
     def insert_time(self):
         self.tick_id = self.hvn.world.global_time + 1_000_000 * self.hvn.SIM_NUMBER
