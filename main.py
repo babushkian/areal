@@ -1,6 +1,6 @@
 ﻿import os
 import random
-import time
+
 from tkinter import *
 
 from areal import heaven
@@ -9,7 +9,6 @@ from areal.help import HelpButton
 from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
-
 
 
 class App(Tk):
@@ -55,28 +54,38 @@ class App(Tk):
         self.labelframe.update_a()
         self.after(20, self.update_a)
 
-
-    def run(self):
+    def init_if_newborn(self):
         if self.newborn:
+            print('Инициализировали')
             self.canv.init_sim()
             self.newborn = False
+
+    def simulate(self):
         self.canv.update()
+        if self.sim_state:
+            self.world_timer = self.after(20, self.simulate)
+        else:
+            if self.world_timer:
+                self.after_cancel(self.world_timer)
 
     def one_step(self, event=None):
-        self.sim_state = False
+        self.init_if_newborn()
         self.chbox.disable_checkbutton()
-        self.run()
+        self.simulate()
 
     def start_stop(self, event=None):
+        self.init_if_newborn()
         if not self.canv.game_over:
             if self.sim_state == False:
                 self.sim_state = True
                 self.chbox.disable_checkbutton()
-                self.run()
+                self.simulate()
             else:
                 self.sim_state = False
 
     def restart(self, event=None):
+        if self.world_timer:
+            self.after_cancel(self.world_timer)
         if cn.RANDOM_ON:
             self.entry.config(state=DISABLED)
             self.rand_label.config(text='Генератор истинно случайных чисел.')
@@ -86,13 +95,18 @@ class App(Tk):
         self.chbox.enable_checkbutton()
         if not self.newborn:
             self.canv.end_of_simulation()
+            self.canv.delete_simulation()
+            del self.canv
             self.canv = heaven.Heaven(self.canvframe, self)
+            self.newborn = True
+
 
     def is_draw(self, objname):
         return self.chbox.is_draw(objname)
 
     def quit(self):
-        self.canv.end_of_simulation()
+        if not self.newborn:
+            self.canv.end_of_simulation()
         del self.canv
         print("Удаляем мир и окно")
         self.destroy()

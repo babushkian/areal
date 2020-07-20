@@ -27,9 +27,6 @@ class World():
         self.update_fields()
         self.update_objects()
 
-    def debug_obj_count(self):
-        print(f'pl:{Plant.COUNT} se:{Seed.COUNT}  ro:{Rot.COUNT}')
-
     def time_pass(self):
         self.years = self.global_time // cn.MONTHS # не думаю, что эта строк адолжна стоять первой
         self.global_time += 1

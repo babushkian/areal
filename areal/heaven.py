@@ -26,6 +26,7 @@ class Heaven:
         Heaven.SIM_NUMBER += 1
         self.calculated = False # признак, что новое состояние посчиталось и его можно выводить на экран
         self.game_over = False
+        self.simulation_closed = False # выполнены действия по достижении конца симуляции. Чтобы второй раз не вызывалось
         self.time_over = False
         self.perish = False
         self.starving = 0  # растения, не получющие необходимое количество пищи
@@ -61,9 +62,8 @@ class Heaven:
 
 
     def update(self):
-        if not self.calculated or not cn.GRAPHICS:
+        if not self.calculated or not cn.GRAPHICS: # срабатывает, если calculated = False (рассчитанный кадр был отображен в graphics)
             self.world.time_pass()
-            #self.db.insert_time()
             self.world.update()
 
             self.db.db_write()
@@ -88,16 +88,28 @@ class Heaven:
 
 
     def end_of_simulation(self):
-        if cn.GRAPHICS:
-            self.graph.display_end_of_simulation()
-        self.logging.population_metric_record(METRIC_FILE)
-        METRIC_FILE.flush()
-        metric = (self.sign_plant_num, self.sign_seeds_born, self.sign_rot_amount,
-                  self.sign_seeds_grow_up, self.sign_plant_mass_integral, self.soil_flow)
-        self.db.insert_metric(metric)
-        self.db.close_connection()
-        self.logging.logging_close()
+        # это остановка симуляции, все объекты остаются нетронутыми
+        # закрываются файлы и связь с базой
+        if not self.simulation_closed:
+            if cn.GRAPHICS:
+                self.graph.display_end_of_simulation()
+            self.logging.population_metric_record(METRIC_FILE)
+            METRIC_FILE.flush()
+            metric = (self.sign_plant_num, self.sign_seeds_born, self.sign_rot_amount,
+                      self.sign_seeds_grow_up, self.sign_plant_mass_integral, self.soil_flow)
+            self.db.insert_metric(metric)
+            self.db.close_connection()
+            self.logging.logging_close()
+            self.simulation_closed = True
 
+
+    def delete_simulation(self):
+    # удаление симуляции. удаляются все внутрнние объекты, включая графическое представление
+        del self.world
+        del self.logging
+        del self.db
+        if cn.GRAPHICS:
+            self.graph.destroy()
 
     def statistics(self):
         self.soil_mass = 0

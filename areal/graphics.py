@@ -87,8 +87,6 @@ class GW(Canvas):
                 self.fields[field][1].text = self.create_tooltip_text(field) #подсказка привязанная к клетке
 
     def update_a(self):
-        print('Обновление графики')
-        print(self.hvn.world.global_time)
         if self.hvn.calculated:
             self.update_fields()
             self.update_objects()
