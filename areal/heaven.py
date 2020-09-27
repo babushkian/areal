@@ -1,6 +1,7 @@
 import time
 import os
 from areal import constants as cn
+from areal.worldcreate import WCreate
 from areal.world import World
 from areal.graphics import GW
 from areal.base import WorldBase
@@ -17,7 +18,7 @@ class Heaven:
     def __init__(self, frame, app):
         self.app = app
         self.frame = frame
-        self.world = World()
+        self.world = None
         if cn.GRAPHICS:
             self.graph = GW(self)
         else:
@@ -48,11 +49,12 @@ class Heaven:
 
 
     def init_sim(self):
+        setup = WCreate()
+        self.world = setup.return_new_world()
         self.db = WorldBase(self, SIM_DIR)
         self.db.insert_params()
         #self.db.insert_time()
         self.logging = Log(self, SIM_DIR)
-        self.world.init_sim()
         if cn.GRAPHICS:
             self.graph.init_sim()
 

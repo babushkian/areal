@@ -8,22 +8,23 @@ from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 
+
 class Field:  # клетка поля
     # максимальное количество растений на клетку, чтобы симуляция не тормозила
     MAX_PLANTS_IN_FIELD = cn.MAX_PLANTS_IN_FIELD
     # физическое расстояние от центра до края клетки  (половина клетки!!, т.к. PHYS_SIZE - половина игрового поля)
     FIELD_GRAPH_TO_PHYS_PROPORTION = cn.PHYS_SIZE / cn.FIELDS_NUMBER_BY_SIDE
 
-
     def __init__(self, world, row, col, soil):
         self.world = world
         self.row = row
         self.col = col
-        self.id = self.coord_to_id(row, col)
+        self.id = Field.coord_to_id(row, col)
         self.name = 'field'
+        self.insert_soil(soil)
         self.tooltip = None
         self.starving = 0
-        self.counts = Counter({'plant':0, 'seed':0, 'rot':0})
+        self.counts = Counter({'plant': 0, 'seed': 0, 'rot': 0})
         self.plants = dict() # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
         self.to_breed = list() # растения, готовые к размножению
         self.rot = dict() # гниль на клетке
@@ -34,7 +35,6 @@ class Field:  # клетка поля
         self.rot_mass = 0
         self.plant_ration = 0 # сколько можно скормить каждому растению за ход
         self.change_field_objects = {'new': dict(), 'obsolete': dict()}
-        self.soil = soil
         # физические координаты поля: его центра и краев
         self.center_x, self.center_y = Plant_proto.graph_to_phys(row, col)
         self.lu_x = self.center_x - self.FIELD_GRAPH_TO_PHYS_PROPORTION # left-up conner
@@ -113,7 +113,6 @@ class Field:  # клетка поля
     def breed_plants(self):
         for p in self.to_breed:
             # выбираем случайную клетку в окрестностях, чтобы засеять семя
-            l = len(p.field.area)
             x, y = self.get_near_field_coords()
             id = self.coord_to_id(x, y)
             seed_mass = p.split_mass()
@@ -158,6 +157,9 @@ class Field:  # клетка поля
         s.append(f'{(self.plant_mass + self.rot_mass + self.seed_mass + self.soil):7.1f}\n')
         field_string = '\t'.join(s).replace('.', ',')
         return field_string
+
+    def insert_soil(self, soil):
+        self.soil = soil
 
     @staticmethod
     def coord_to_id(row, col):

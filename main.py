@@ -168,16 +168,18 @@ class InfoLabels(Frame):
     def update_a(self):
         if self.app.canv.world_mass == 0:
             plant_percent = seed_percent = rot_percent = soil_percent = 0
+            starving = time = 0
             #print("ZERO")
         else:
             plant_percent = self.app.canv.plant_mass / self.app.canv.world_mass * 100
             seed_percent = self.app.canv.seed_mass / self.app.canv.world_mass * 100
             rot_percent = self.app.canv.rot_mass / self.app.canv.world_mass * 100
             soil_percent = self.app.canv.soil_mass / self.app.canv.world_mass * 100
-
-        data = (self.app.canv.world.global_time,
+            time = self.app.canv.world.global_time
+            starving = self.app.canv.starving_percent
+        data = (time,
                 Plant.COUNT,
-                self.app.canv.starving_percent,
+                starving,
                 Seed.COUNT,
                 Rot.COUNT,
                 plant_percent,

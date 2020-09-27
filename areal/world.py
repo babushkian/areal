@@ -20,8 +20,7 @@ class World():
         Seed.COUNT = 0
         Rot.COUNT = 0
         self.create_fields()
-        self.plant_setup_3()
-        self.gather_changed_objects()
+
 
     def update(self):
         self.update_fields()
@@ -55,7 +54,7 @@ class World():
     def create_fields(self):
         for row in range(cn.FIELDS_NUMBER_BY_SIDE):
             for col in range(cn.FIELDS_NUMBER_BY_SIDE):
-                f =  Field(self, row, col, cn.INIT_SOIL)
+                f = Field(self, row, col, cn.INIT_SOIL)
                 self.fields[f.id] = f
 
     def create_plant(self, id):
