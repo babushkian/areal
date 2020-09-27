@@ -24,6 +24,9 @@ t1 = time.time()
 c.execute('CREATE INDEX IF NOT EXISTS plant_mass_idx  ON plant_mass (plant_id)')
 c.execute('CREATE INDEX IF NOT EXISTS plant_tick_idx  ON plant_mass (tick_id)')
 c.execute('CREATE INDEX IF NOT EXISTS soil_tick_idx  ON soil (tick_id)')
+c.execute('CREATE INDEX IF NOT EXISTS seed_birth_idx  ON seeds (birth)')
+c.execute('CREATE INDEX IF NOT EXISTS seed_death_idx  ON seeds (death)')
+
 t2 = time.time()
 c.execute('''SELECT tick_id
 		FROM time
@@ -46,12 +49,24 @@ for i in x:
 		WHERE tick_id = (?)''', i)
 	rot_mass = c.fetchall()
 
+	'''
+	SELECT SUM(soil.soil), SUM(plant_mass.all_energy), SUM(rot_mass.mass) 
+	FROM FROM soil 
+	INNER JOIN plant_mass
+		ON soil.tick_id = plant_mass.tick_id
+	INNER JOIN rot_mass
+		ON soil.tick_id = rot_mass.tick_id
+	WHERE soil.tick_id = (?)
+			
+	'''
+
+	"""
 	c.execute('''SELECT 5*COUNT(seed_id)
 		FROM seeds
 		WHERE birth <= (?)
 			AND death >= (?)''', (i[0], i[0]))
 	seed_mass = c.fetchall()
-
+	"""
 
 	print(field_soil, plant_mass, rot_mass, seed_mass)
 """

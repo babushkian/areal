@@ -9,8 +9,8 @@ from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 
-SIM_DIR = None
-METRIC_FILE = None
+SIM_DIR = os.getcwd() # некорректное значение, переопределяется в функции init_sim_dir, котрая вызывается с более высокого уровня
+METRIC_FILE = 'dummy' # некорректное значение, переопределяется в функции init_metrc, котрая вызывается с более высокого уровня
 
 class Heaven:
     SIM_NUMBER = 0
@@ -31,11 +31,11 @@ class Heaven:
         self.perish = False
         self.starving = 0  # растения, не получющие необходимое количество пищи
         self.starving_percent = 0
-        self.world_mass = 0
+        self.world_mass = 0 # полная масса системы: почва растения, семена и гниль
         self.seed_mass = 0
         self.plant_mass = 0
         self.rot_mass = 0
-        self.soil_mass = 0 # полная масса системы: почва растения, семена и гниль
+        self.soil_mass = 0
         # метрики
         self.sign_plant_num = 0 # кличество растений, рожденных за время симуляции
         self.sign_seeds_born = 0 # количество семян за время симуляции
@@ -168,6 +168,8 @@ def init_sim_dir():
 
 def init_metric():
     global METRIC_FILE
+
     metr = os.path.join(SIM_DIR, 'metric.csv')
     METRIC_FILE = open(metr, 'w', encoding='UTF16')
+    #print(type(METRIC_FILE))
     population_metric_head(METRIC_FILE)
