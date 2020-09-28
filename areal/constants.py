@@ -1,6 +1,6 @@
 ﻿import math
 
-RANDOM_ON = False
+RANDOM_ON = True
 RANDOM_SEED = 'banana'
 
 GRAPHICS = True # будет ли отображаться симуляция на экране
@@ -30,7 +30,7 @@ PHYS_SIZE = 100  # физические размеры игрового поля
 FIELD_SIZE_PIXELS = 128  # размер одной клетки в пикселях
 
 
-FIELDS_NUMBER_BY_SIDE = 11 # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
+FIELDS_NUMBER_BY_SIDE = 17 # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
 
 
 
@@ -42,7 +42,7 @@ def define_delay():
     return AFTER_COOLDOWN
 
 
-SIMULATION_PERIOD = 800  # количество лет, по истечении которых симуляция завершается
+SIMULATION_PERIOD = 50  # количество лет, по истечении которых симуляция завершается
 
 
 
