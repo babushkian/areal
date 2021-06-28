@@ -33,7 +33,8 @@ class Seed(Plant_proto):
             self.become_rot()
 
     def become_rot(self):
-        Rot(self.field, self.x, self.y, self.all_energy)
+        #Rot(self.field, self.x, self.y, self.all_energy)
+        self.field.rot_mass += self.all_energy
         self.destroy_seed()
 
     def destroy_seed(self):

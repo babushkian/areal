@@ -6,7 +6,6 @@ from areal import constants as cn
 from areal.proto import Plant_proto
 from areal.plant import Plant
 from areal.seed import Seed
-from areal.rot import Rot
 
 
 class Field:  # клетка поля
@@ -59,7 +58,7 @@ class Field:  # клетка поля
         """
         Вызывается из класса World при размножении расений
         Служит для инициалищзации растений  в начале симуляции. В дальнейшем не используется,
-        растения прорастают из семян
+        так как растения прорастают из семян
         """
         # определяем координаты новорожденного растения
         # физические координаты
@@ -68,7 +67,8 @@ class Field:  # клетка поля
         if self.counts['plant'] < self.MAX_PLANTS_IN_FIELD:
             Plant(self, x, y)
         else:
-            Rot(self, x, y, cn.TOTAL_SEED_MASS)
+            #Rot(self, x, y, cn.TOTAL_SEED_MASS)
+            self.rot_mass += cn.TOTAL_SEED_MASS
 
     def create_seed(self, seed_mass):
         # определяем координаты новорожденного растения
@@ -83,9 +83,15 @@ class Field:  # клетка поля
         self.objects = list()  # излишняя, нужно удалить,
 
     def update_rot(self):
+        '''
         rot_list = list(self.rot)
         for r in rot_list:
             self.rot[r].update()
+        '''
+        new_soil = self.rot_mass if self.rot_mass < 1 else self.rot_mass / cn.DECAY_HALFLIFE
+        self.rot_mass -= new_soil
+        self.soil += new_soil
+
 
     def update_seeds(self):
         seeds_list = list(self.seeds)
@@ -108,6 +114,7 @@ class Field:  # клетка поля
 
     def update_objs(self):
         for i in (self.plants,self.seeds, self.rot):
+        # for i in (self.plants,self.seeds):
             self.objects.extend(i.values())  # излишняя, нужно удалить,
 
     def breed_plants(self):
@@ -116,7 +123,7 @@ class Field:  # клетка поля
             x, y = self.get_near_field_coords()
             id = self.coord_to_id(x, y)
             seed_mass = p.split_mass()
-            self.world.create_seed(id, seed_mass)
+            self.world.create_seed(id, seed_mass)  # создается через world, так как смемена подают на соседние полянки
         self.to_breed = []
 
     def get_near_field_coords(self):
@@ -136,7 +143,7 @@ class Field:  # клетка поля
             self.plant_mass += self.plants[p].all_energy
             if self.plants[p].delta < 0:
                 self.starving += 1
-        self.rot_mass = 0
+        #self.rot_mass = 0
         for r in self.rot:
             self.rot_mass += self.rot[r].all_energy
         self.seed_mass =0

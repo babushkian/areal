@@ -65,7 +65,8 @@ class Plant(Plant_proto):
 
     def die(self):
         self.count_down()
-        Rot(self.field, self.x, self.y, self.all_energy)
+        #Rot(self.field, self.x, self.y, self.all_energy)
+        self.field.rot_mass += self.all_energy
         del self.field.plants[self.id]
 
 
