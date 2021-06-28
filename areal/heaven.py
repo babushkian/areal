@@ -10,12 +10,12 @@ from areal.plant import Plant
 from areal.seed import Seed
 from areal.rot import Rot
 
-SIM_DIR = os.getcwd() # некорректное значение, переопределяется в функции init_sim_dir, котрая вызывается с более высокого уровня
-METRIC_FILE = 'dummy' # некорректное значение, переопределяется в функции init_metrc, котрая вызывается с более высокого уровня
+SIM_DIR = os.getcwd()  # некорректное значение, переопределяется в функции init_sim_dir, котрая вызывается с более высокого уровня
+METRIC_FILE = 'dummy'  # некорректное значение, переопределяется в функции init_metrc, котрая вызывается с более высокого уровня
 
 class Heaven:
     SIM_NUMBER = 0
-    def __init__(self, frame, app):
+    def __init__(self, frame, app):  # фрейм, куда вставлять канвас с игровым полем; приложение Tkinter
         self.app = app
         self.frame = frame
         self.world = None
@@ -25,26 +25,26 @@ class Heaven:
             self.graph = None
         self.db = None
         Heaven.SIM_NUMBER += 1
-        self.calculated = False # признак, что новое состояние посчиталось и его можно выводить на экран
+        self.calculated = False  # признак, что новое состояние посчиталось и его можно выводить на экран
         self.game_over = False
-        self.simulation_closed = False # выполнены действия по достижении конца симуляции. Чтобы второй раз не вызывалось
+        self.simulation_closed = False  # выполнены действия по достижении конца симуляции. Чтобы второй раз не вызывалось
         self.time_over = False
         self.perish = False
-        self.starving = 0  # растения, не получющие необходимое количество пищи
+        self.starving = 0   # растения, не получющие необходимое количество пищи
         self.starving_percent = 0
-        self.world_mass = 0 # полная масса системы: почва растения, семена и гниль
+        self.world_mass = 0  # полная масса системы: почва растения, семена и гниль
         self.seed_mass = 0
         self.plant_mass = 0
         self.rot_mass = 0
         self.soil_mass = 0
         # метрики
-        self.sign_plant_num = 0 # кличество растений, рожденных за время симуляции
-        self.sign_seeds_born = 0 # количество семян за время симуляции
-        self.sign_rot_amount = 0 # коичество гнили за время симуляции, показывает оборот биомассы
-        self.sign_seeds_grow_up = 0 # количество семян, проросших за время симуляции
+        self.sign_plant_num = 0  # кличество растений, рожденных за время симуляции
+        self.sign_seeds_born = 0  # количество семян за время симуляции
+        self.sign_rot_amount = 0  # коичество гнили за время симуляции, показывает оборот биомассы
+        self.sign_seeds_grow_up = 0  # количество семян, проросших за время симуляции
         self.sign_plant_mass_energy = 0
         self.sign_plant_mass_integral = 0
-        self.soil_flow = 0# МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции
+        self.soil_flow = 0  # МЕТРИКА: сколько гнили переработалось в почву за весь период симулчяции
         self.living_beings = 0
 
 
