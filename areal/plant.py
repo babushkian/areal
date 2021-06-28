@@ -1,8 +1,6 @@
-﻿# graphic version
-from areal import constants as cn
+﻿from areal import constants as cn
 
 from areal.proto import Plant_proto
-from areal.rot import Rot
 
 class Plant(Plant_proto):
     COUNT = 0
@@ -65,7 +63,6 @@ class Plant(Plant_proto):
 
     def die(self):
         self.count_down()
-        #Rot(self.field, self.x, self.y, self.all_energy)
         self.field.rot_mass += self.all_energy
         del self.field.plants[self.id]
 

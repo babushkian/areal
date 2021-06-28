@@ -67,7 +67,6 @@ class Field:  # клетка поля
         if self.counts['plant'] < self.MAX_PLANTS_IN_FIELD:
             Plant(self, x, y)
         else:
-            #Rot(self, x, y, cn.TOTAL_SEED_MASS)
             self.rot_mass += cn.TOTAL_SEED_MASS
 
     def create_seed(self, seed_mass):
@@ -83,11 +82,6 @@ class Field:  # клетка поля
         self.objects = list()  # излишняя, нужно удалить,
 
     def update_rot(self):
-        '''
-        rot_list = list(self.rot)
-        for r in rot_list:
-            self.rot[r].update()
-        '''
         new_soil = self.rot_mass if self.rot_mass < 1 else self.rot_mass / cn.DECAY_HALFLIFE
         self.rot_mass -= new_soil
         self.soil += new_soil
@@ -113,9 +107,8 @@ class Field:  # клетка поля
                 self.plants[plant].update()
 
     def update_objs(self):
-        for i in (self.plants,self.seeds, self.rot):
-        # for i in (self.plants,self.seeds):
-            self.objects.extend(i.values())  # излишняя, нужно удалить,
+        for i in (self.plants,self.seeds):
+            self.objects.extend(i.values())
 
     def breed_plants(self):
         for p in self.to_breed:
@@ -143,10 +136,7 @@ class Field:  # клетка поля
             self.plant_mass += self.plants[p].all_energy
             if self.plants[p].delta < 0:
                 self.starving += 1
-        #self.rot_mass = 0
-        for r in self.rot:
-            self.rot_mass += self.rot[r].all_energy
-        self.seed_mass =0
+        self.seed_mass = 0
         for s in self.seeds:
             self.seed_mass += self.seeds[s].all_energy
 
@@ -155,7 +145,7 @@ class Field:  # клетка поля
         s.append(f'{self.world.global_time}')
         s.append(f'[{self.row:2d}][{self.col:2d}]')
         s.append(f'{self.counts["plant"]:2d}')
-        s.append(f'{self.counts["rot"]:2d}')
+        #s.append(f'{self.counts["rot"]:2d}')
         s.append(f'{self.counts["seed"]:2d}')
         s.append(f'{self.plant_mass:6.1f}')
         s.append(f'{self.rot_mass:6.1f}')

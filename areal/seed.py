@@ -2,7 +2,6 @@ from areal import field as fd # класс загружается только �
 from areal import constants as cn
 from areal.proto import Plant_proto
 from areal.plant import Plant
-from areal.rot import Rot
 
 
 class Seed(Plant_proto):
@@ -33,7 +32,6 @@ class Seed(Plant_proto):
             self.become_rot()
 
     def become_rot(self):
-        #Rot(self.field, self.x, self.y, self.all_energy)
         self.field.rot_mass += self.all_energy
         self.destroy_seed()
 

@@ -3,7 +3,6 @@ from areal import weather
 from areal.field import Field
 from areal.plant import Plant
 from areal.seed import Seed
-from areal.rot import Rot
 
 class World():
     def __init__(self):
@@ -18,7 +17,6 @@ class World():
     def init_sim(self):
         Plant.COUNT = 0
         Seed.COUNT = 0
-        Rot.COUNT = 0
         self.create_fields()
 
 

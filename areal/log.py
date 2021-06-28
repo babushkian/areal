@@ -2,7 +2,7 @@ import os
 from areal import constants as cn
 from areal.plant import Plant
 from areal.seed import Seed
-from areal.rot import Rot
+
 class Log:
     def __init__(self, hvn, sim_dir):
         self.hvn = hvn
@@ -23,7 +23,6 @@ class Log:
         s = f'{self.hvn.world.years}\t{self.hvn.world.global_time}\t{Plant.COUNT}\t'
         s += f'{Plant.COUNT - self.hvn.starving}\t{self.hvn.starving}\t'
         s += f'{Seed.COUNT}\t'
-        s += f'{Rot.COUNT}\t'
         s += f'{self.hvn.seed_mass:8.1f}\t{self.hvn.plant_mass:8.1f}\t{self.hvn.rot_mass:8.1f}\t'
         s += f'{self.hvn.soil_mass:8.1f}\t{self.hvn.world_mass:8.1f}\n'
         file.write(s.replace('.', ','))

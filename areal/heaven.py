@@ -8,7 +8,7 @@ from areal.base import WorldBase
 from areal.log import Log, population_metric_head
 from areal.plant import Plant
 from areal.seed import Seed
-from areal.rot import Rot
+
 
 SIM_DIR = os.getcwd()  # некорректное значение, переопределяется в функции init_sim_dir, котрая вызывается с более высокого уровня
 METRIC_FILE = 'dummy'  # некорректное значение, переопределяется в функции init_metrc, котрая вызывается с более высокого уровня
@@ -155,7 +155,7 @@ class Heaven:
         self.sign_seeds_grow_up += min(born_plants, obsolete_seeds)
 
         self.world_mass = self.soil_mass + self.seed_mass + self.plant_mass + self.rot_mass
-        self.count_of_world_objects = Plant.COUNT + Seed.COUNT + Rot.COUNT
+        self.count_of_world_objects = Plant.COUNT + Seed.COUNT
 
 
 def init_sim_dir():
