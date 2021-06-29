@@ -7,7 +7,6 @@ GRAPHICS = True # будет ли отображаться симуляция н
 
 GRAPH_PLANT = True
 GRAPH_SEED = True
-GRAPH_ROT = True
 GRAPH_FIELD = True
 
 if not GRAPHICS:
@@ -18,7 +17,6 @@ if not GRAPHICS:
 
 GRAPH_DICT = {  'plant': GRAPH_PLANT,
                 'seed':GRAPH_SEED,
-                'rot':GRAPH_ROT,
                 'field': GRAPH_FIELD}
 
 
@@ -37,7 +35,7 @@ FIELDS_NUMBER_BY_SIDE = 17 # размерность игрового поля в
 # частота обновления кадолв. Вычисляется в ззависимости от нагрузки (в осоновном от размера поля)
 BASE_DELAY = 1
 def define_delay():
-    AFTER_COOLDOWN = BASE_DELAY + 5 * GRAPH_FIELD + (1 * GRAPH_PLANT + 3* GRAPH_ROT + 2 * GRAPH_SEED) \
+    AFTER_COOLDOWN = BASE_DELAY + 5 * GRAPH_FIELD + (1 * GRAPH_PLANT + 2 * GRAPH_SEED) \
                      * int(FIELDS_NUMBER_BY_SIDE * FIELDS_NUMBER_BY_SIDE /16)
     return AFTER_COOLDOWN
 

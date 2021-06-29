@@ -113,7 +113,6 @@ class App(Tk):
 class Checkers(Frame):
     CHECKBOX_TEXT = {'plant': 'рисотвать растения    ',
                   'seed': 'рисовать семена        ',
-                  'rot': 'рисовать гниль            ',
                   'field': 'рисовать клетки поля'}
     CHECKS = {}
     def __init__(self, root, app):
