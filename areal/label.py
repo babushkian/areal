@@ -46,15 +46,15 @@ class CanvasTooltip:
     def schedule(self):
         self.unschedule()
         self.id = self.canvas.after(self.waittime, self.show)
-        self.refr = self.canvas.after(20, self.update_text)
+        self.refresh = self.canvas.after(20, self.update_text)
 
     def unschedule(self):
         id_ = self.id
         self.id = None
         if id_:
             self.canvas.after_cancel(id_)
-            self.canvas.after_cancel(self.refr)
-            self.refr = None
+            self.canvas.after_cancel(self.refresh)
+            self.refresh = None
 
     def show(self, event=None):
         def tip_pos_calculator(canvas, label,
@@ -136,7 +136,7 @@ class CanvasTooltip:
 
     def update_text(self, event=None):
         self.label.config(text = self.text)
-        self.refr = self.canvas.after(20, self.update_text)
+        self.refresh = self.canvas.after(20, self.update_text)
 
     def hide(self):
         if self.tw:

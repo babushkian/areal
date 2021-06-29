@@ -23,10 +23,9 @@ class Field:  # клетка поля
         self.insert_soil(soil)
         self.tooltip = None
         self.starving = 0
-        self.counts = Counter({'plant': 0, 'seed': 0, 'rot': 0})
+        self.counts = Counter({'plant': 0, 'seed': 0})
         self.plants = dict() # словарь растений, размещенных на данной клетке; в качестве ключа - id графического объекта
         self.to_breed = list() # растения, готовые к размножению
-        self.rot = dict() # гниль на клетке
         self.seeds = dict() # семена на клетке
         self.objects = list() # излишняя, нужно удалить, используется для записи объектов на клетек в базу
         self.seed_mass =0
@@ -145,7 +144,6 @@ class Field:  # клетка поля
         s.append(f'{self.world.global_time}')
         s.append(f'[{self.row:2d}][{self.col:2d}]')
         s.append(f'{self.counts["plant"]:2d}')
-        #s.append(f'{self.counts["rot"]:2d}')
         s.append(f'{self.counts["seed"]:2d}')
         s.append(f'{self.plant_mass:6.1f}')
         s.append(f'{self.rot_mass:6.1f}')

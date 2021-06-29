@@ -8,7 +8,6 @@ from areal import constants as cn
 from areal.help import HelpButton
 from areal.plant import Plant
 from areal.seed import Seed
-from areal.rot import Rot
 
 
 class App(Tk):
@@ -149,7 +148,6 @@ class InfoLabels(Frame):
                    'растений:{:5d}',
                    'голодающих:{:5.1f}%',
                    'семян:{:5d}',
-                   'гнили:{:5d}',
                    'масса растений:{:5.1f}%',
                    'масса семян:{:5.1f}%',
                    'масса гнили:{:5.1f}%',
@@ -181,7 +179,6 @@ class InfoLabels(Frame):
                 Plant.COUNT,
                 starving,
                 Seed.COUNT,
-                Rot.COUNT,
                 plant_percent,
                 seed_percent,
                 rot_percent,

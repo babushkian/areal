@@ -110,7 +110,7 @@ class GW(Canvas):
         text = f'Клетка: {field.row:02d}x{field.col:02d}\n'
         text += f'Растений: {field.counts["plant"]:4d}({field.plant_mass:6.1f})\n'
         text += f'Семян: {field.counts["seed"]:4d}({field.seed_mass:6.1f})\n'
-        text += f'Гнили: {field.counts["rot"]:4d}({field.rot_mass:6.1f})\n'
+        text += f'Масса гнили: {field.rot_mass:6.1f}\n'
         text += f'Масса почвы: {field.soil:6.1f}'
         return text
     # в момент, когда графическией элемент удаляется, а подсказка была активирована, подтсказка
@@ -119,7 +119,7 @@ class GW(Canvas):
     def destroy(self):
         # чтобы после сброса симуляции не оставались открытые подсказки
         if CanvasTooltip.OPENED:
-            for lab in CanvasTooltip.OPENED:
-                lab.hide()
+            for label in CanvasTooltip.OPENED:
+                label.hide()
 
         super().destroy()
