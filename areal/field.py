@@ -40,15 +40,21 @@ class Field:  # клетка поля
         self.rd_x = self.center_x + self.FIELD_GRAPH_TO_PHYS_PROPORTION # right-down corner
         self.rd_y = self.center_y - self.FIELD_GRAPH_TO_PHYS_PROPORTION
         self.area = self.spread_area()  # соседние клетки, на которые происходит  распространиение семян
-
+        self.num_of_neighbours = len(self.area)
 
     def spread_area(self):
+        '''
+        Возвращает соседей данной клетки, чтобы в них можно было посеять семена
+        '''
         area = []
+        borders = range(cn.FIELDS_NUMBER_BY_SIDE)
         r_start = self.row - 1
         c_start = self.col - 1
         for r in range(r_start, self.row +2):
             for c in range(c_start, self.col +2):
-                if r in range(cn.FIELDS_NUMBER_BY_SIDE) and c in range(cn.FIELDS_NUMBER_BY_SIDE):  # проверяем, чтобы соседи не вылезали за границы игрового поля
+                self_field = r == self.row and c==self.col
+                in_borders = r in borders and c in borders
+                if not self_field and in_borders:  # проверяем, чтобы соседи не вылезали за границы игрового поля
                     area.append((r, c))
         return area
 
@@ -85,11 +91,10 @@ class Field:  # клетка поля
         self.rot_mass -= new_soil
         self.soil += new_soil
 
-
     def update_seeds(self):
         seeds_list = list(self.seeds)
         sl = len(seeds_list)
-        if sl > 2:
+        if sl > 2: # перемешиваем семена, чтобы прорастали случайные, а не первые в списке
             x = random.randrange(sl)
             y = random.randrange(sl)
             seeds_list[x], seeds_list[y] = seeds_list[y], seeds_list[x]
@@ -112,15 +117,17 @@ class Field:  # клетка поля
     def breed_plants(self):
         for p in self.to_breed:
             # выбираем случайную клетку в окрестностях, чтобы засеять семя
-            x, y = self.get_near_field_coords()
+            x, y = self.get_field_to_plant()
             id = self.coord_to_id(x, y)
             seed_mass = p.split_mass()
             self.world.create_seed(id, seed_mass)  # создается через world, так как смемена подают на соседние полянки
         self.to_breed = []
 
-    def get_near_field_coords(self):
-        l = len(self.area)
-        return self.area[random.randrange(l)]
+    def get_field_to_plant(self):
+        if random.random() > cn.MIGRATION_PROB:
+            return self.row, self.col
+        else:
+            return self.area[random.randrange(self.num_of_neighbours)]
 
     def add_to_new_pool(self, obj):
         self.change_field_objects['new'][obj.id] = obj
