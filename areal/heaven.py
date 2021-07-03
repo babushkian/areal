@@ -124,6 +124,7 @@ class Heaven:
             # подсчет масс растений семян, гнили и почвы на каждой клетке
             field.info()
             self.db.update_soil(field)
+            self.db.update_rot(field)
             # подсчет полной массы почвы на на игровом поле
             self.soil_mass += field.soil
             self.seed_mass += field.seed_mass

@@ -10,12 +10,8 @@ class WorldBase:
         self.conn = sqlite3.connect(base)
         self.c = self.conn.cursor()
         self.obj_type_associations = {'plant': {'new': self.insert_plant, 'obsolete':self.plant_death},
-                                      'seed': {'new': self.insert_seed, 'obsolete': self.seed_death},
-                                      'rot': {'new': self.insert_rot, 'obsolete': self.rot_to_soil}
+                                      'seed': {'new': self.insert_seed, 'obsolete': self.seed_death}
         }
-        self.obj_type_associations_in_field = {'plant': self.update_plant_mass,
-                                                'seed': self.seed_pass,
-                                                'rot': self.update_rot_mass}
 
         self.c.execute('PRAGMA foreign_keys=on')
 
@@ -78,19 +74,6 @@ class WorldBase:
             FOREIGN KEY (death) REFERENCES time (tick_id)
             )""")
 
-        self.c.execute("""CREATE TABLE IF NOT EXISTS rot (
-            rot_id INTEGER PRIMARY KEY,
-            field_id TEXT NOT NULL, 
-            birth INTEGER, 
-            death INTEGER DEFAULT NULL,
-            x INTEGER NOT NULL,
-            y INTEGER NOT NULL,
-            FOREIGN KEY (field_id) REFERENCES fields (field_id),
-            FOREIGN KEY (birth) REFERENCES time (tick_id)
-            FOREIGN KEY (death) REFERENCES time (tick_id)
-            )""")
-
-
         self.c.execute("""CREATE TABLE IF NOT EXISTS soil (
             id INTEGER PRIMARY KEY,
             field_id TEXT NOT NULL,
@@ -112,11 +95,11 @@ class WorldBase:
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS rot_mass (
             id INTEGER PRIMARY KEY,
-            rot_id INTEGER NOT NULL,
+            field_id TEXT NOT NULL,
             tick_id INTEGER NOT NULL,
-            mass REAL,  
-            FOREIGN KEY (rot_id) REFERENCES rot (rot_id),
-            FOREIGN KEY (tick_id) REFERENCES time (tick_id) 
+            rot_mass REAL, 
+            FOREIGN KEY (field_id) REFERENCES fields (field_id),
+            FOREIGN KEY (tick_id) REFERENCES time (tick_id)
             )""")
 
         self.conn.commit()
@@ -139,9 +122,8 @@ class WorldBase:
                 func = self.obj_type_associations[obj.name][pool]
                 func(obj)
         for field in self.hvn.world.fields.values():
-            for obj in field.objects:
-                func = self.obj_type_associations_in_field[obj.name]
-                func(obj)
+            for obj in field.plants.values():
+                self.update_plant_mass(obj)
 
     def insert_params(self):
         def param_tuple():
@@ -190,7 +172,8 @@ class WorldBase:
                        (self.tick_id, self.hvn.world.global_time, self.hvn.SIM_NUMBER))
 
     def insert_field(self, field):
-        self.c.execute('INSERT OR REPLACE INTO fields (field_id, row, col) VALUES (?, ?, ?)', (field.id, field.row, field.col))
+        self.c.execute('INSERT OR REPLACE INTO fields (field_id, row, col) VALUES (?, ?, ?)',
+                       (field.id, field.row, field.col))
 
     def insert_plant(self, plant):
         self.c.execute('INSERT INTO plants (plant_id, field_id, birth, x, y) VALUES (?, ?, ?, ?, ?)',
@@ -208,27 +191,16 @@ class WorldBase:
         self.c.execute('INSERT INTO seeds (seed_id, field_id, birth, x, y) VALUES (?, ?, ?, ?, ?)',
                        (seed.id, seed.field.id, self.tick_id, seed.x, seed.y))
 
-    def seed_pass(self, seed):
-        pass
-
     def seed_death(self, seed):
         self.c.execute('UPDATE seeds SET death = (?) WHERE seed_id = (?)', (self.tick_id, seed.id))
 
-
-    def insert_rot(self, rot):
-        self.c.execute('INSERT INTO rot (rot_id, field_id, birth, x, y) VALUES (?, ?, ?, ?, ?)',
-                       (rot.id, rot.field.id, self.tick_id, rot.x, rot.y))
-
-    def update_rot_mass(self, rot):
-        self.c.execute("""INSERT INTO  rot_mass (rot_id, tick_id, mass) VALUES (?, ?, ?)""",
-                       (rot.id, self.tick_id, rot.all_energy))
-
-    def rot_to_soil(self, rot):
-        self.c.execute('UPDATE rot SET death = (?) WHERE rot_id = (?)', (self.tick_id, rot.id))
-
-
     def update_soil(self, field):
-        self.c.execute('INSERT INTO  soil (field_id, tick_id, soil) VALUES (?, ?, ?)', (field.id, self.tick_id, field.soil))
+        self.c.execute('INSERT INTO  soil (field_id, tick_id, soil) VALUES (?, ?, ?)',
+                       (field.id, self.tick_id, field.soil))
+
+    def update_rot(self, field):
+        self.c.execute('INSERT INTO  rot_mass (field_id, tick_id, rot_mass) VALUES (?, ?, ?)',
+                       (field.id, self.tick_id, field.rot_mass))
 
 
     def commit(self):

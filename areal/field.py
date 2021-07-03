@@ -106,7 +106,7 @@ class Field:  # клетка поля
                 self.plants[plant].update()
 
     def update_objs(self):
-        for i in (self.plants,self.seeds):
+        for i in (self.plants, self.seeds):
             self.objects.extend(i.values())
 
     def breed_plants(self):

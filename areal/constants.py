@@ -12,7 +12,6 @@ GRAPH_FIELD = True
 if not GRAPHICS:
     GRAPH_PLANT = False
     GRAPH_SEED = False
-    GRAPH_ROT = False
     GRAPH_FIELD = False
 
 GRAPH_DICT = {  'plant': GRAPH_PLANT,
@@ -28,7 +27,7 @@ PHYS_SIZE = 100  # физические размеры игрового поля
 FIELD_SIZE_PIXELS = 128  # размер одной клетки в пикселях
 
 
-FIELDS_NUMBER_BY_SIDE = 17 # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
+FIELDS_NUMBER_BY_SIDE = 9 # размерность игрового поля в клетках (по одной стороне, так как поле квадратное)
 
 
 
@@ -40,14 +39,14 @@ def define_delay():
     return AFTER_COOLDOWN
 
 
-SIMULATION_PERIOD = 50  # количество лет, по истечении которых симуляция завершается
+SIMULATION_PERIOD = 15  # количество лет, по истечении которых симуляция завершается
 
 
 
 if FIELD_SIZE_PIXELS * FIELDS_NUMBER_BY_SIDE > MAX_WIDNDOW:
     FIELD_SIZE_PIXELS = MAX_WIDNDOW // FIELDS_NUMBER_BY_SIDE
 WIDTH = FIELD_SIZE_PIXELS * FIELDS_NUMBER_BY_SIDE  # размеры окна в пикселях
-HEIGHT = WIDTH # поле квадратное, так что не паримся с лишними вычислениями
+HEIGHT = WIDTH  # поле квадратное, так что не паримся с лишними вычислениями
 # физическое расстояние от центра игрового поля до угла. Нужна для определения суровости погоды,
 # так как суровость распространяется радиально
 PHYS_HYPOT = math.hypot(PHYS_SIZE, PHYS_SIZE)
@@ -61,12 +60,11 @@ MONTS_ANGLE = math.pi * 2 / MONTHS
 FRESH_PLANT_COLOR = 'lawn green'
 SICK_PLANT_COLOR = 'forest green'#'dark olive green'
 SEED_COLOR = 'goldenrod' #,'light goldenrod' #, 'light goldenrod yellow' , 'pale goldenrod' ,'gold'
-ROT_COLOR = 'saddle brown'
+
 
 # парамерты для отрисовки растений, семян и гнили
 DRAW_PARAMS = {'plant':{'size':3, 'color': FRESH_PLANT_COLOR, 'border':1},
-                'seed':{'size':2, 'color': SEED_COLOR, 'border':0},
-                'rot':{'size':2, 'color': ROT_COLOR, 'border':0}}
+                'seed':{'size':2, 'color': SEED_COLOR, 'border':0}}
 
 GLOBAL_COUNTER = 0
 def global_counter():
@@ -79,6 +77,10 @@ def global_counter():
     GLOBAL_COUNTER += 1
     return id
 
+# РАСТЕНИЕ
+PLANT_LIFETIME_YEARS = 4 # время жизни в годах
+FRUITING_PERIOD = 0.5  # период между плодоношениями (в годах) . Чем меньше, тем чаще плодоношение.
+
 
 
 # КЛЕТКА (класс Field )
@@ -87,6 +89,8 @@ INIT_SOIL = 80  # количество почвы на клетке
 MAX_SOIL_ON_FIELD = 10000
 # максимальное количество растений на клетку, чтобы симуляция не тормозила
 MAX_PLANTS_IN_FIELD = 5
+DECAY_HALFLIFE = 2*MONTHS * PLANT_LIFETIME_YEARS# за сколько ходов осдвется полвина гнили
+
 
 
 # СЕМЯ
@@ -96,14 +100,6 @@ SEED_GROW_UP_CONDITION = 20
 SEED_LIFE = 5
 # время, в течении которого семечко не прорастает (в годах)
 SEED_PROHIBITED_GROW_UP = 0
-
-# РАСТЕНИЕ
-PLANT_LIFETIME_YEARS = 4 # время жизни в годах
-FRUITING_PERIOD = 0.25  # период между плодоношениями (в годах) . Чем меньше, тем чаще плодоношение.
-
-# ГНИЛЬ
-DECAY_MULTIPLIER = 0.3 # скорость гниения, чем больше, тем быстрее растение сгнивает
-DECAY_HALFLIFE = 2*MONTHS * PLANT_LIFETIME_YEARS# за сколько ходов осдвется полвина гнили
 
 
 # скрытая масса семечка, его внутренние резервы
@@ -117,9 +113,9 @@ TOTAL_SEED_MASS = SEED_MASS + PLANT_HIDDEN_MASS
 PLANT_MAX_MASS = 30
 
 # логирование
-WRITE_FIELDS_INFO = True
-WRITE_PLANTS_INFO = True
-WRITE_WORLD_INFO = True
+WRITE_FIELDS_INFO = False
+WRITE_PLANTS_INFO = False
+WRITE_WORLD_INFO = False
 plant_header = 'time\tID\tpmalnt coords\tage\tmass\ttotal food consumed\tfood to live\t food to grow\t food ability\tget food\tmass delta\tsoil in field\n'
 fiend_header = 'global time\tcoordinates\tplants\tseeds\tbiomass\trot mass\tseeds mass\tsoil\ttotal mass\n'
 world_header = 'year\tglob time\ttotal plants\tfull\tstarving\tseeds\tseed mass\tbiomass\trot mass\tsoil\ttotal mass\n'
