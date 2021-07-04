@@ -146,20 +146,6 @@ class Field:  # клетка поля
         for s in self.seeds:
             self.seed_mass += self.seeds[s].all_energy
 
-    def write_info(self):
-        s = []
-        s.append(f'{self.world.global_time}')
-        s.append(f'[{self.row:2d}][{self.col:2d}]')
-        s.append(f'{self.counts["plant"]:2d}')
-        s.append(f'{self.counts["seed"]:2d}')
-        s.append(f'{self.plant_mass:6.1f}')
-        s.append(f'{self.rot_mass:6.1f}')
-        s.append(f'{self.seed_mass:6.1f}')
-        s.append(f'{self.soil:6.1f}')
-        s.append(f'{(self.plant_mass + self.rot_mass + self.seed_mass + self.soil):7.1f}\n')
-        field_string = '\t'.join(s).replace('.', ',')
-        return field_string
-    
     def info_dict(self):
         s = dict()
         s['global time'] = f'{self.world.global_time}'

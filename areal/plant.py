@@ -49,7 +49,6 @@ class Plant(Plant_proto):
             if self.world.global_time % self.BREED_TIME == 0 and self.mass > 0.95 * cn.PLANT_MAX_MASS:
                 self.field.to_breed.append(self)  # встает в очередь на размножение
             self.feed()
-            self.info()
 
     def split_mass(self):
         """
@@ -65,24 +64,6 @@ class Plant(Plant_proto):
         self.count_down()
         self.field.rot_mass += self.all_energy
         del self.field.plants[self.id]
-
-
-    def info(self):
-        out_string = []
-        out_string.append(str(self.world.global_time))
-        out_string.append(str(self.id))
-        out_string.append(f'[{self.field.row:2d}][{self.field.col:2d}]')
-        out_string.append(str(self.age))
-        out_string.append(f'{self.mass:4.1f}')
-        out_string.append(f'{self.all_energy:5.1f}')
-        out_string.append(f'{self.res_to_live:4.1f}')
-        out_string.append(f'{self.res_to_grow:4.1f}')
-        out_string.append(f'{self.res_ability:4.1f}')
-        out_string.append(f'{self.get:4.1f}')
-        out_string.append(f'{self.delta:4.1f}')
-        out_string.append(f'{self.field.soil:7.1f}\n')
-        plant_string = '\t'.join(out_string).replace('.', ',')
-        return plant_string
 
     def info_dict(self):
         out = dict()
