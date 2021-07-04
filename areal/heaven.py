@@ -64,7 +64,8 @@ class Heaven:
 
 
     def update(self):
-        if not self.calculated or not cn.GRAPHICS: # срабатывает, если calculated = False (рассчитанный кадр был отображен в graphics)
+        # срабатывает, если calculated = False (рассчитанный кадр был отображен в graphics)
+        if not self.calculated or not cn.GRAPHICS:
             self.world.time_pass()
             self.world.update()
 
@@ -81,7 +82,7 @@ class Heaven:
                 self.end_of_simulation()
 
     def check_end_of_simulation(self):
-        if not self.world.global_time < cn.MONTHS * cn.SIMULATION_PERIOD:
+        if self.world.global_time >= cn.MONTHS * cn.SIMULATION_PERIOD:
             self.time_over = True
             self.game_over = True
         if self.count_of_world_objects < 1:

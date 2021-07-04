@@ -84,5 +84,19 @@ class Plant(Plant_proto):
         plant_string = '\t'.join(out_string).replace('.', ',')
         return plant_string
 
-
+    def info_dict(self):
+        out = dict()
+        out['time'] = f'{self.world.global_time}'
+        out['ID'] = f'{self.id}'
+        out['plant coords'] = f'[{self.field.row:2d}][{self.field.col:2d}]'
+        out['age'] = str(self.age)
+        out['mass'] = f'{self.mass:4.1f}'.replace('.', ',')
+        out['total food consumed'] = f'{self.all_energy:5.1f}'.replace('.', ',')
+        out['food to live'] = f'{self.res_to_live:4.1f}'.replace('.', ',')
+        out['food to grow'] = f'{self.res_to_grow:4.1f}'.replace('.', ',')
+        out['food ability'] = f'{self.res_ability:4.1f}'.replace('.', ',')
+        out['get food'] = f'{self.get:4.1f}'.replace('.', ',')
+        out['mass delta'] = f'{self.delta:4.1f}'.replace('.', ',')
+        out['soil in field'] = f'{self.field.soil:7.1f}'.replace('.', ',')
+        return out
 

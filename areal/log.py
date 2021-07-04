@@ -1,40 +1,43 @@
-import os
+import csv
+from abc import ABC
+from pathlib import Path
 from areal import constants as cn
 from areal.plant import Plant
 from areal.seed import Seed
 
+
+
+plant_header = ['time', 'ID', 'plant coords', 'age', 'mass', 'total food consumed', 'food to live',
+               'food to grow', 'food ability', 'get food', 'mass delta', 'soil in field']
+
+field_header = ['global time', 'coordinates', 'plants', 'seeds', 'biomass', 'rot mass', 'seeds mass',
+                'soil', 'total mass']
+world_header = ['year', 'glob time', 'total plants', 'full', 'starving', 'seeds', 'seed mass',
+                'biomass', 'rot mass', 'soil', 'total mass']
+
+LOGGING = ((cn.WRITE_PLANTS_INFO, 'every_plant_life', plant_header),
+           (cn.WRITE_FIELDS_INFO, 'fields_info', field_header),
+           (cn.WRITE_WORLD_INFO, 'world_info', world_header))
+
 class Log:
     def __init__(self, hvn, sim_dir):
         self.hvn = hvn
+        '''
         self.logfile_associations = {'every_plant_life': self.log_plants,
                              'fields_info': self.log_fields,
                              'world_info': self.log_world}
-        self.log_functions = {} # словарь содержит функции, которые должны вызываться для логирования ключевого файла
+        '''
+        self.logfile_associations = {'every_plant_life': PlantLogger,
+                             'fields_info': FieldLogger,
+                             'world_info': WorldLogger}
+        self.logger = dict() # словарь содержит классы, которые должны вызываться для логирования ключевого файла
         suffix = self.file_suffix()
-        for action, name, header in cn.LOGGING:
+        for action, filename, header in LOGGING:
             if action:
-                fname = os.path.join(sim_dir, f'{name}_{suffix}.csv')
-                f = open(fname, 'w', encoding='UTF16')
-                f.write(header)
-                self.log_functions[f] = self.logfile_associations[name]
+                fname = Path(sim_dir, f'{filename}_{suffix}.csv')
+                log_object = self.logfile_associations[filename](self.hvn, fname, header)
+                self.logger[filename] = log_object
 
-
-    def log_world(self, file):
-        s = f'{self.hvn.world.years}\t{self.hvn.world.global_time}\t{Plant.COUNT}\t'
-        s += f'{Plant.COUNT - self.hvn.starving}\t{self.hvn.starving}\t'
-        s += f'{Seed.COUNT}\t'
-        s += f'{self.hvn.seed_mass:8.1f}\t{self.hvn.plant_mass:8.1f}\t{self.hvn.rot_mass:8.1f}\t'
-        s += f'{self.hvn.soil_mass:8.1f}\t{self.hvn.world_mass:8.1f}\n'
-        file.write(s.replace('.', ','))
-
-    def log_fields(self, file):
-        for field in self.hvn.world.fields.values():
-            file.write(field.write_info())
-
-    def log_plants(self, file):
-        for field in self.hvn.world.fields.values():
-            for plant in field.plants.values():
-                file.write(plant.info())
 
     @staticmethod
     def file_suffix():
@@ -51,15 +54,12 @@ class Log:
         return s
 
     def write(self):
-        for file in self.log_functions:
-            self.log_functions[file](file)
+        for writer in self.logger.values():
+            writer.write()
 
     def logging_close(self):
-        for file in self.log_functions:
-            if not file.closed:
-                file.close()
-
-
+        for writer in self.logger.values():
+                writer.close()
 
     def population_metric_record(self, file):
         s = list()
@@ -83,7 +83,6 @@ class Log:
         string = string.replace('.', ',')
         file.write(string)
 
-
 def population_metric_head(file):
     s = 'dimension\t'
     s += 'end date\t'
@@ -101,3 +100,49 @@ def population_metric_head(file):
     s += 'integral_plant_mass\t'
     s += 'total soil flow\n'
     file.write(s)
+
+
+class Logger(ABC):
+    def __init__(self, hvn, filename, header):
+        self.hvn = hvn
+        self.file = open(filename, 'w', encoding='utf16')
+        self.writer=csv.DictWriter(self.file, header, dialect=csv.unix_dialect)
+        self.writer.writeheader()
+        self.dict_defined = False
+
+    def close(self):
+        if not self.file.closed:
+            self.file.close()
+
+
+class PlantLogger(Logger):
+    def write(self):
+        row = dict()
+        for field in self.hvn.world.fields.values():
+            for plant in field.plants.values():
+                self.writer.writerow(plant.info_dict())
+        self.writer.writerow(row)
+
+
+class FieldLogger(Logger):
+    def write(self):
+        for field in self.hvn.world.fields.values():
+            self.writer.writerow(field.info_dict())
+
+
+class WorldLogger(Logger):
+    def write(self):
+        s = dict()
+        s['year'] = f'{self.hvn.world.years}'
+        s['glob time'] = f'{self.hvn.world.global_time}'
+        s['total plants'] = f'{Plant.COUNT}'
+        s['full'] = f'{Plant.COUNT - self.hvn.starving}'
+        s['starving'] = f'{self.hvn.starving}'
+        s['seeds'] = f'{Seed.COUNT}'
+        s['seed mass'] = f'{self.hvn.seed_mass:8.1f}'.replace('.', ',')
+        s['biomass'] = f'{self.hvn.plant_mass:8.1f}'.replace('.', ',')
+        s['rot mass'] = f'{self.hvn.rot_mass:8.1f}'.replace('.', ',')
+        s['soil'] = f'{self.hvn.soil_mass:8.1f}'.replace('.', ',')
+        s[ 'total mass'] = f'{self.hvn.world_mass:8.1f}'.replace('.', ',')
+        self.writer.writerow(s)
+

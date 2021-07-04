@@ -159,6 +159,20 @@ class Field:  # клетка поля
         s.append(f'{(self.plant_mass + self.rot_mass + self.seed_mass + self.soil):7.1f}\n')
         field_string = '\t'.join(s).replace('.', ',')
         return field_string
+    
+    def info_dict(self):
+        s = dict()
+        s['global time'] = f'{self.world.global_time}'
+        s['coordinates'] = f'[{self.row:2d}][{self.col:2d}]'
+        s['plants'] = f'{self.counts["plant"]:2d}'
+        s['seeds'] = f'{self.counts["seed"]:2d}'
+        s['biomass'] = f'{self.plant_mass:6.1f}'.replace('.', ',')
+        s['rot mass'] = f'{self.rot_mass:6.1f}'.replace('.', ',')
+        s['seeds mass'] = f'{self.seed_mass:6.1f}'.replace('.', ',')
+        s['soil'] = f'{self.soil:6.1f}'.replace('.', ',')
+        s['total mass'] = f'{(self.plant_mass + self.rot_mass + self.seed_mass + self.soil):7.1f}'.replace('.', ',')
+        return s
+
 
     def insert_soil(self, soil):
         self.soil = soil
