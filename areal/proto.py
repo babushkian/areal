@@ -7,9 +7,9 @@ class Plant_proto(ABC):
         self.field = field
         self.world = field.world
         self.all_energy = 0
-        # координаты экранного пространства,  а не физические
         self.x = x
         self.y = y
+        # координаты экранного пространства,  а не физические
         self.sx, self.sy = self.phys_to_screen(x, y)
         self.age = 0
         type(self).COUNT += 1 # глобальный счетчик сущностей

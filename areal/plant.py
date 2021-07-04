@@ -6,36 +6,33 @@ class Plant(Plant_proto):
     COUNT = 0
     LIFETIME = int(cn.PLANT_LIFETIME_YEARS * cn.MONTHS)
     BREED_TIME = int(cn.FRUITING_PERIOD * cn.MONTHS)
-    TIME_COEF = 4 / cn.MONTHS  # коэффициент влияющий на скорость роста и питания
-    # чем больше скважность, тем более мелкими порциями растение питается
     GROW_UP_PER_TIC = 15 / cn.MONTHS
     ALPHA = 0.1 * GROW_UP_PER_TIC
     BETA = 0.3 * GROW_UP_PER_TIC
     GAMA = 0.5 * GROW_UP_PER_TIC
-    EPSILON = 0.3
+    EPSILON = 0.3 * GAMA
 
 
-    def __init__(self,  field, x, y):
+    def __init__(self,  field, x, y, mass, hidden):
         self.name = 'plant'
         super().__init__(field, x, y)
-        self.mass = cn.SEED_MASS
-        self.all_energy = cn.TOTAL_SEED_MASS  # еда, потребленная за всю жизнь
+        self.mass = mass
+        # еда, потребленная за всю жизнь. Нужна чтобы при смерти вернуьб всю энергиюв землю.
+        self.all_energy = mass + hidden
         self.field.plants[self.id] = self
 
-
-    def count_needs(self):
-        self.res_to_live = self.ALPHA * self.mass  # сколько ресурсов нужно просто на поддержание жизни
-        self.res_to_grow = self.BETA * (cn.PLANT_MAX_MASS - self.mass)
-        self.res_ability = self.GAMA * (1 + self.EPSILON * self.mass)  # возможность добыть еды за ход
-        return self.res_to_live, self.res_to_grow, self.res_ability
-
     def feed(self):
-        res_to_live, res_to_grow, res_ability = self.count_needs()
-        want =  min(res_to_live + res_to_grow, res_ability)
+        def count_needs():
+            live = self.ALPHA * self.mass  # сколько ресурсов нужно просто на поддержание жизни
+            grow = self.BETA * (cn.PLANT_MAX_MASS - self.mass)
+            ability = self.GAMA + self.EPSILON * self.mass  # возможность добыть еды за ход
+            return live, grow, ability
+        self.res_to_live, self.res_to_grow, self.res_ability = count_needs()
+        want =  min(self.res_to_live + self.res_to_grow, self.res_ability)
         self.get = min(want, self.field.plant_ration)
         self.field.soil -= self.get
         self.all_energy += self.get
-        self.delta = self.get - res_to_live  # растение может получать меньше, чем тратит на жизнь
+        self.delta = self.get - self.res_to_live  # растение может получать меньше, чем тратит на жизнь
         self.mass += self.delta
         if self.mass < 0.5:  # как только масса понижается до минимума, растение гибнет от голода
             self.die()
@@ -52,9 +49,8 @@ class Plant(Plant_proto):
 
     def split_mass(self):
         """
-        Вызывается при размножении. Уменьшает массу растения нм амссу семечка.
+        Вызывается при размножении. Уменьшает массу растения на массу семечка.
         Возвращает массу семечка
-        :return: seed_mass
         """
         self.mass -= cn.TOTAL_SEED_MASS
         self.all_energy -= cn.TOTAL_SEED_MASS

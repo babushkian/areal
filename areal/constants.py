@@ -39,7 +39,7 @@ def define_delay():
     return AFTER_COOLDOWN
 
 
-SIMULATION_PERIOD = 30  # количество лет, по истечении которых симуляция завершается
+SIMULATION_PERIOD = 50  # количество лет, по истечении которых симуляция завершается
 
 
 
@@ -99,17 +99,19 @@ SEED_GROW_UP_CONDITION = 20
 # сколько лет семечко может пролежать до всхода и не умереть
 SEED_LIFE = 5
 # время, в течении которого семечко не прорастает (в годах)
-SEED_PROHIBITED_GROW_UP = 0
+SEED_PROHIBITED_GROW_UP = 2
 
 
 # скрытая масса семечка, его внутренние резервы
-PLANT_HIDDEN_MASS = 5
+SEED_HIDDEN_MASS = 5
+#скорость исчерпания семечком внутренних резервов
+SEED_FEED = SEED_HIDDEN_MASS/(SEED_LIFE * MONTHS)
 
 # масса семечка
 SEED_MASS = 1
-TOTAL_SEED_MASS = SEED_MASS + PLANT_HIDDEN_MASS
+TOTAL_SEED_MASS = SEED_MASS + SEED_HIDDEN_MASS
 # вероятность перелететь в одну из соседних клеток
-MIGRATION_PROB = 0.20
+MIGRATION_PROB = 0.50
 
 
 # максимальная масса растения

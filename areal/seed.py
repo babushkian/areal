@@ -12,21 +12,32 @@ class Seed(Plant_proto):
         self.name = 'seed'
         super().__init__(field, x, y)
         self.all_energy = seed_mass
+        self.food = cn.SEED_HIDDEN_MASS
         self.grow_up_age = cn.SEED_PROHIBITED_GROW_UP * cn.MONTHS
         self.field.seeds[self.id] = self
 
-    def update(self):
+    def update_old(self):
         super().update()
         if self.age > cn.SEED_LIFE * cn.MONTHS:
             self.become_rot()
         else:
-            self.age += 1
             if self.field.soil >= cn.SEED_GROW_UP_CONDITION and self.age >= self.grow_up_age:
                 self.grow_up()
 
+    def update(self):
+        super().update()
+        self.food -= min(self.food, cn.SEED_FEED)
+        if self.food == 0:
+            self.become_rot()
+        else:
+            if self.field.soil >= cn.SEED_GROW_UP_CONDITION and self.age >= self.grow_up_age:
+                self.grow_up()
+
+
     def grow_up(self):
         if len(self.field.plants) < fd.Field.MAX_PLANTS_IN_FIELD:
-            Plant(self.field,  self.x, self.y)
+            Plant(self.field,  self.x, self.y, cn.SEED_MASS, self.food)
+            self.field.rot_mass += cn.SEED_HIDDEN_MASS - self.food
             self.destroy_seed()
         else:
             self.become_rot()

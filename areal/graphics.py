@@ -38,8 +38,8 @@ class GW(Canvas):
             cd = cn.FIELD_SIZE_PIXELS
             for field in self.hvn.world.fields.values():
                 shape = self.create_rectangle(cd * field.row, cd * field.col,
-                                                  cd * field.row + cd, cd * field.col + cd,
-                                                  width=0, fill='#888888', tags = field.name)
+                                            cd * field.row + cd, cd * field.col + cd, width=1,
+                                            outline='#668888', fill='#888888', tags = field.name)
                 tooltip = CanvasTooltip(self, shape, text=self.create_tooltip_text(field))
                 self.fields[field] = (shape, tooltip)
 

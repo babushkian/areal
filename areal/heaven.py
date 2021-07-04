@@ -85,7 +85,7 @@ class Heaven:
         if self.world.global_time >= cn.MONTHS * cn.SIMULATION_PERIOD:
             self.time_over = True
             self.game_over = True
-        if self.count_of_world_objects < 1:
+        if self.count_of_world_objects < 1 and self.rot_mass < 1:
             self.perish = True
             self.game_over = True
 

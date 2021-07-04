@@ -70,7 +70,7 @@ class Field:  # клетка поля
         x = self.lu_x + random.randrange(int(self.rd_x - self.lu_x))
         y = self.rd_y + random.randrange(int(self.lu_y - self.rd_y))
         if self.counts['plant'] < self.MAX_PLANTS_IN_FIELD:
-            Plant(self, x, y)
+            Plant(self, x, y, cn.SEED_MASS, cn.SEED_HIDDEN_MASS)
         else:
             self.rot_mass += cn.TOTAL_SEED_MASS
 

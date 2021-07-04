@@ -137,7 +137,7 @@ class WorldBase:
             t.append(cn.SEED_PROHIBITED_GROW_UP)
             t.append(cn.PLANT_LIFETIME_YEARS)
             t.append(cn.FRUITING_PERIOD)
-            t.append(cn.PLANT_HIDDEN_MASS)
+            t.append(cn.SEED_HIDDEN_MASS)
             t.append(cn.SEED_MASS)
             t.append(cn.PLANT_MAX_MASS)
             return tuple(t)
